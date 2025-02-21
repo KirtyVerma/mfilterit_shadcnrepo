@@ -1,0 +1,22 @@
+version: "3"
+
+services:
+  uam-dev-container:
+    image: uam-dev-ui:latest
+    container_name: uam-dev-ui
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    ports:
+      - "58045:3000"
+    restart: always
+    networks:
+      uam-dev-network:
+        ipv4_address: 69.8.0.10 
+
+networks:
+  uam-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 69.8.0.0/16
