@@ -26,34 +26,36 @@ const menu: MenuItem[] = [
             title: "Overall-Summary",
             icon: "",
             subMenu: [],
-            route:
-              "/webfraud/event-visit/dashboard",
+            route: "/webfraud/event-visit/dashboard",
           },
           {
             title: "Analysis Insights",
             icon: "",
             subMenu: [],
-            route:
-              "/webfraud/event-visit/analysis-insights",
+            route: "/webfraud/event-visit/analysis-insights",
           },
           {
             title: "Traffic Insights",
             icon: "",
             subMenu: [],
-            route:
-              "/webfraud/event-visit/traffic-insights",
+            route: "/webfraud/event-visit/traffic-insights",
           },
         ],
       },
-       
-    {
-      title: "Sample Dashboard",
-      icon: "",
-      subMenu: [],
-      route:
-        "/webfraud/event-visit/simple-dashboard",
-    },
+
+      {
+        title: "Web Test",
+        icon: "",
+        subMenu: [],
+        route: "/webfraud/web_test/packages",
+      },
     ],
+  },
+  {
+    title: "Sample Dashboard",
+    icon: "",
+    subMenu: [],
+    route: "/webfraud/event-visit/simple-dashboard",
   },
 ];
 
@@ -62,7 +64,6 @@ function MFWebFraudAsideMenu({
   onHover = (e: boolean) => console.log(e),
   theme = "light", // Default theme
 }) {
-
   const router = useRouter();
 
   return (
@@ -75,7 +76,7 @@ function MFWebFraudAsideMenu({
           "absolute bottom-0 left-0 top-14 w-[14rem] max-w-[14rem] p-2 md:relative md:top-auto":
             isExpanded,
           "w-0 max-w-[4rem] md:w-full md:p-1": !isExpanded,
-        },
+        }
       )}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
@@ -143,7 +144,7 @@ function MenuItem({
               "bg-gray-700 hover:bg-primary": theme === "dark",
               "bg-secondary hover:bg-primary": theme === "light",
             },
-            { "bg-primary": pathName === route },
+            { "bg-primary": pathName === route }
           )}
           onClick={() => {
             if (route) router.push(route);
