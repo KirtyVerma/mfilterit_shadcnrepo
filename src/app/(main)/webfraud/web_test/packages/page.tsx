@@ -19,8 +19,13 @@ export default function ListPackages() {
 
   return (
     <div className="py-2 px-8">
+     <div className="px-8 py-5 bg-white rounded-xl flex items-center justify-between">
+        <h2 className="text-xl font-medium text-gray-900 capitalize">
+          Packages 
+        </h2>
      
-      <div className=" w-full px-3 py-2 bg-white rounded-xl mt-5">
+      </div>
+      <div className="w-full px-3 py-2 bg-white rounded-xl mt-5">
         <ItemTable data={PACKAGES} onclick={handleRowClick}  />
       </div>
     </div>
