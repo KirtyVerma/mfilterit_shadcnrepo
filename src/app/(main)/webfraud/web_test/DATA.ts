@@ -72,7 +72,7 @@ export const packages = [
   ]
   
   
-export const trackker = [
+export const tracker = [
     {
       "package_name": "package-one",
       "Tracker_name": "Tracker-A",
