@@ -3,18 +3,24 @@ import React from "react";
 import { TRACKER } from "../../DATA";
 import { Button } from "@/components/ui/button";
 import ItemTable from "../ItemTable";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function ListTrackers() {
   const packageName = useParams().package_name;
+  const nav = useRouter();
   const extrafields = [
     {
       title: "Actions",
       render: (item: any) => (
         <div className="flex gap-x-2">
-          <Button className="bg-white text-blue-500 hover:text-blue-600">
-            Edit
+          <Button
+            onClick={() =>
+              nav.push(`/webfraud/web_test/trackers/${item.TrackerID}`)
+            }
+            className="bg-white text-blue-500 hover:text-blue-600"
+          >
+            config
           </Button>
           <Button className="bg-white ml-5 text-red-500 hover:text-red-600">
             Delete
