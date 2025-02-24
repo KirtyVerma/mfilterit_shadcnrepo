@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { tracker } from "../../DATA";
+import { TRACKER } from "../../DATA";
 import { Button } from "@/components/ui/button";
 import ItemTable from "../ItemTable";
 import { useParams, useRouter } from "next/navigation";
@@ -45,7 +45,7 @@ export default function ListTrackers() {
       </div>
       <div className=" w-full px-3 py-2 bg-white rounded-xl mt-5">
         <ItemTable
-          data={tracker.filter((item) => item.package_name === packageName)}
+          data={TRACKER.filter((item) => item.package_name === packageName)}
           onclick={handleClick}
           extraFields={extrafields}
         />
