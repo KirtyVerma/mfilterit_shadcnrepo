@@ -23,11 +23,6 @@ export default function ListTrackers() {
   ];
 
   const nav = useRouter();
-
-  function handleClick(t: any) {
-    console.log(t);
-  }
-
   return (
     <div className="py-2 px-8">
       <div className="px-8 py-5 bg-white rounded-xl flex items-center justify-between">
@@ -46,7 +41,7 @@ export default function ListTrackers() {
       <div className=" w-full px-3 py-2 bg-white rounded-xl mt-5">
         <ItemTable
           data={tracker.filter((item) => item.package_name === packageName)}
-          onclick={handleClick}
+          selectable={false}
           extraFields={extrafields}
         />
       </div>

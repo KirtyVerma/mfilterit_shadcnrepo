@@ -15,6 +15,7 @@ type extraFields = {
 };
 type Props = {
   data: Object[];
+  selectable?: boolean;
   onclick?: (item: any) => any;
   extraFields?: extraFields[];
 };
@@ -22,6 +23,7 @@ type Props = {
 export default function ItemTable({
   data,
   onclick: onclick,
+  selectable = true,
   extraFields,
 }: Props) {
   const FieldNames = Object.keys(data[0]);
@@ -45,7 +47,11 @@ export default function ItemTable({
       </TableHeader>
       <TableBody>
         {data.map((items, i) => (
-          <TableRow key={i} onClick={() => (onclick ? onclick(items) : null)}>
+          <TableRow
+            className={`${selectable && "cursor-pointer"}`}
+            key={i}
+            onClick={() => (onclick ? onclick(items) : null)}
+          >
             {Object.values(items).map((values, i) => (
               <TableCell key={i} className="text-center">
                 {values}
