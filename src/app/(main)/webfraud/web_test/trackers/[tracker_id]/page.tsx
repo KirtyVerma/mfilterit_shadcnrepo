@@ -1,25 +1,29 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+
 import { useParams } from "next/navigation";
 import React from "react";
-
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import CodeBlock from "../../CodeBlock";
+import InputForm from "../../Form";
 
 export default function TrackerConfig() {
   const packageName = useParams().package_name;
+  const DATA: any = {
+    tracker_type: {
+      type: "dropdown",
+      values: ["exampleValue1", "exampleValue2", "exampleValue3"],
+    },
+    something_else: {
+      type: "input",
+    },
+    settingThree: {
+      type: "switch",
+    },
+  };
 
-  const InputFields = {};
   // Dummy code to display on the right side
+  function handleSubmit(values: any) {
+    console.log("Trackers Configuration Form Data:", values);
+  }
 
   const codeSnippet = `<script>
     (function(m, f, i, l, t, e, r) {
@@ -41,49 +45,14 @@ export default function TrackerConfig() {
     <div className="py-2 px-8">
       <div className="px-8 py-5 bg-white rounded-xl flex items-center justify-between">
         <h2 className="text-xl font-medium text-gray-900 capitalize">
-          create Trackers
+          Trackers Configuration
         </h2>
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
         <div className=" bg-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6">Package Name :</Label>
-            <Input
-              className=" w-4/6"
-              placeholder="Enter tracker name"
-              value={packageName}
-              disabled
-            />
-          </div>
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6">Tracker Type :</Label>
-            <Select>
-              <SelectTrigger className="w-4/6 capitalize">
-                <SelectValue placeholder="impression" />
-              </SelectTrigger>
-              <SelectContent>
-                {["impression", "visit", "click", "event", "s2s"].map(
-                  (Item, i) => (
-                    <SelectItem value={Item} key={i} className="capitalize">
-                      {Item}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6">Setting 1 : </Label>
-            <Input className="  w-4/6" placeholder="Setting 1" />
-          </div>
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6">Setting 2 : </Label>
-            <Input className=" w-4/6" placeholder="Setting 2" />
-          </div>
-          <div className="flex justify-end">
-            <Button className="capitalize mt-2 mb-5">Generate Tracker</Button>
-          </div>
+          <InputForm data={DATA} cb={handleSubmit} />
         </div>
+
         <div className=" flex  w-full justify-center bg-white rounded-lg py-5">
           <CodeBlock code={codeSnippet} />
         </div>
