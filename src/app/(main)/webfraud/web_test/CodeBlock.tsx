@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Copy } from "lucide-react";
 
@@ -11,25 +10,32 @@ import {
 } from "@/components/ui/tooltip";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface CodeBlockProps {
   code: string;
 }
 
 const CodeBlock = ({ code }: CodeBlockProps) => {
-  const [copied, setCopied] = useState(false);
+  const { toast } = useToast();
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const toastObj = toast({
+      description: "Tracker code copied to clipboard!",
+      className: "bg-green-500 text-white"
+    });
+
+    setTimeout(() => {
+      toastObj.dismiss();
+    }, 1000);
   };
 
   return (
     <Card className="relative w-full max-w-3xl bg-[#1e1e1e] text-white border border-[#3c3c3c] rounded-lg">
       <CardContent className="p-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs text-gray-400">TypeScript</span>
+          <span className="text-md text-gray-400 capitalize">js</span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -37,7 +43,7 @@ const CodeBlock = ({ code }: CodeBlockProps) => {
                   <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent>{copied ? "Copied!" : "Copy"}</TooltipContent>
+              <TooltipContent>{"Copy"}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
