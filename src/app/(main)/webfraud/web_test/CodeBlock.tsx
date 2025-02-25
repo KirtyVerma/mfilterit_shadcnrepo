@@ -48,3 +48,5 @@ const CodeBlock = ({ code }: CodeBlockProps) => {
     </Card>
   );
 };
+
+export default CodeBlock;

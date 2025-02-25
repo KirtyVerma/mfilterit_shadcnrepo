@@ -1,5 +1,6 @@
 "use client"
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useParams } from "next/navigation";
 import React from "react";
 
@@ -15,6 +16,8 @@ export default function TrackerConfig() {
       <div className="flex flex-col lg:flex-row px-3 py-2 gap-x-4  rounded-xl mt-5">
         <div className="w-full bg-white rounded-lg p-3">
           <div className="h-[200px]">CreateTracker for {packageName}</div>
+         
+
         </div>
         <div className="w-full bg-white rounded-lg p-3">
           <div className="h-[200px]">right</div>
