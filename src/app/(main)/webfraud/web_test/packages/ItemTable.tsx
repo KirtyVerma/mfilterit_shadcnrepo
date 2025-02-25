@@ -85,7 +85,8 @@ export default function ItemTable({
         ))}
       </TableBody>
     </Table>
-    {totalPages>1&&<div className="flex justify-between items-center mt-4">
+    {totalPages > 1 ? 
+    <div className="flex justify-between items-center mt-4">
         <Button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
@@ -103,7 +104,8 @@ export default function ItemTable({
         >
           Next
         </Button>
-      </div>}
+      </div>
+      : null}
     </>
     
   );
