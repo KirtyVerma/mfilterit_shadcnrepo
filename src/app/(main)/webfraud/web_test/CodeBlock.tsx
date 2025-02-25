@@ -14,9 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 
 interface CodeBlockProps {
   code: string;
+  language?: string;
 }
 
-const CodeBlock = ({ code }: CodeBlockProps) => {
+const CodeBlock = ({ code,language="javascript" }: CodeBlockProps) => {
   const { toast } = useToast();
 
   const copyToClipboard = () => {
@@ -35,7 +36,7 @@ const CodeBlock = ({ code }: CodeBlockProps) => {
     <Card className="relative w-full max-w-3xl bg-[#1e1e1e] text-white border border-[#3c3c3c] rounded-lg">
       <CardContent className="p-4">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-md text-gray-400 capitalize">js</span>
+          <span className="text-md text-gray-400 capitalize">{language}</span>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>

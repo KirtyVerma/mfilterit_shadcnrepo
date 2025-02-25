@@ -43,7 +43,7 @@ export default function CreateTracker() {
           create Trackers
         </h2>
       </div>
-      <div className="flex flex-col gap-2 lg:flex-row px-3 py-2 gap-x-4  rounded-xl mt-5 w-full">
+      <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
         <div className=" bg-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
           <div className="flex items-center justify-between gap-x-5">
             <Label className="w-2/6">Package Name :</Label>
@@ -83,13 +83,8 @@ export default function CreateTracker() {
             <Button className="capitalize mt-2 mb-5">Generate Tracker</Button>
           </div>
         </div>
-        <div className=" flex flex-col w-full bg-white rounded-lg p-3">
-          <div className="">
-            <pre className="text-sm">
-              <CodeBlock code={codeSnippet} />
-            </pre>
-          </div>
-          <div className="flex flex-end"></div>
+        <div className=" flex justify-center w-full bg-white rounded-lg py-5">
+          <CodeBlock code={codeSnippet} />
         </div>
       </div>
     </div>
