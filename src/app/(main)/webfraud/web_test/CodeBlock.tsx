@@ -13,18 +13,49 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
 interface CodeBlockProps {
-  code: string;
+  code?: string;
   language?: string;
+  fetchData?: Function;
 }
 
-const CodeBlock = ({ code,language="javascript" }: CodeBlockProps) => {
-  const { toast } = useToast();
+const dummyCode = `<script>
+(function(m, f, i, l, t, e, r) {
+    m[t] = m[t] || function() {
+        (m[t].q = m[t].q || []).push(arguments)
+    }, m[t].l = 1 * new Date();
+    e = f.createElement(l);
+    e.async = 1;
+    e.id = "mfilterit-visit-tag";
+    e.src = i;
+    r = f.getElementsByTagName(l)[0];
+    r.parentNode.insertBefore(e, r);
+})(window, document, "script_url", "script", "mf");
+    mf("mf_package_name", "web.test_package.cpv");
+    mf("mf_tracking_type", "pageviews"); 
+</script> `;
 
+const CodeBlock = ({
+  code,
+  language = "javascript",
+  fetchData,
+}: CodeBlockProps) => {
+  const { toast } = useToast();
+  const [codeSnippet, setcodeSnippet] = useState(dummyCode);
+  const [preview, setpreview] = useState(Boolean(fetchData));
+  const handleClick = async () => {
+    if (!fetchData) throw new Error("data fetch fnc not passed");
+
+    await fetchData().then((code: string) => {
+      setcodeSnippet(code);
+      setpreview(false);
+    });
+  };
   const copyToClipboard = () => {
+    if (!code) return;
     navigator.clipboard.writeText(code);
     const toastObj = toast({
       description: "Tracker code copied to clipboard!",
-      className: "bg-green-500 text-white"
+      className: "bg-green-500 text-white",
     });
 
     setTimeout(() => {
@@ -33,9 +64,11 @@ const CodeBlock = ({ code,language="javascript" }: CodeBlockProps) => {
   };
 
   return (
-    <Card className="relative w-full max-w-3xl bg-[#1e1e1e] text-white border border-[#3c3c3c] rounded-lg">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-center mb-2">
+    <Card
+      className={`relative w-full max-w-3xl bg-[#1e1e1e] text-white border border-[#3c3c3c] rounded-lg overflow-auto ${!code && "overflow-hidden"} no- scrollbar`}
+    >
+      <CardContent className="relative p-4">
+        <div className=" sticky top-0 bg-[#1e1e1e] border-b-2 border-gray-700 flex justify-between items-center mb-2">
           <span className="text-md text-gray-400 capitalize">{language}</span>
           <TooltipProvider>
             <Tooltip>
@@ -49,9 +82,17 @@ const CodeBlock = ({ code,language="javascript" }: CodeBlockProps) => {
           </TooltipProvider>
         </div>
         <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300">
-          {code}
+          {/* {code ? code : dummyCode} */}
+          {codeSnippet}
         </pre>
       </CardContent>
+      {preview && (
+        <div className="absolute top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
+          <Button className="rounded-sm" onClick={handleClick}>
+            Preview
+          </Button>
+        </div>
+      )}
     </Card>
   );
 };

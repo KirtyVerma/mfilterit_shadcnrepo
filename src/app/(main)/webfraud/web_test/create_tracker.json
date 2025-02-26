@@ -1,23 +1,26 @@
 {
     "impression": {
-        "Multipleimpresssion": { 
+        "Multipleimpresssion": {
             "type": "dropdown",
-            "value": "[exampleValue,exampleValue2,exampleValue3]"
+            "values": [
+                "Value1",
+                "Value2",
+                "Value3"
+            ]
         },
         "impresssionthreashold": {
             "type": "input",
-            "value": "exampleValue"
+            "values": "exampleValue"
         }
     },
     "visit": {
         "Visitvalue": {
             "type": "input",
-            "value": "exampleValue"
+            "values": "exampleValue"
         },
         "VisitPerson": {
             "type": "input",
-            "value": "exampleValue"
+            "values": "exampleValue"
         }
     }
-
 }

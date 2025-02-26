@@ -12,18 +12,28 @@ import {
 import { Switch } from "@/components/ui/switch";
 import React, { useState } from "react";
 
+type DataFromat =
+  | {
+      type: "dropdown";
+      values?: string[];
+    }
+  | {
+      type: "input" | "switch";
+    };
 type Props = {
-  data: Record<string, any>;
+  data: DataFromat[];
   cb: Function;
 };
 
-const InputForm = ({ data,cb }: Props) => {
+const InputForm = ({ data, cb }: Props) => {
   const [values, setValues] = useState(() => {
     // Initialize state with default values
     return Object.keys(data).reduce(
-      (acc, key) => {
-        if (data[key].type !== "radio") acc[key] = data[key]?.values?.[0] || "";
-        else acc[key] = data[key]?.values?.[0] || false;
+      (acc, key: any) => {
+        if (data[key].type === "dropdown")
+          acc[key] = data[key]?.values?.[0] || "";
+        else if (data[key].type === "switch") acc[key] = false;
+        else acc[key] = "";
         return acc;
       },
       {} as Record<string, any>
@@ -37,7 +47,7 @@ const InputForm = ({ data,cb }: Props) => {
 
   return (
     <form className="flex flex-col gap-y-4" onSubmit={handleSubmit}>
-      {Object.keys(data).map((key) => {
+      {Object.keys(data).map((key: any) => {
         const field = data[key];
 
         if (field.type === "input")
@@ -77,11 +87,16 @@ const InputForm = ({ data,cb }: Props) => {
                   <SelectValue placeholder={values[key]} />
                 </SelectTrigger>
                 <SelectContent>
-                  {field?.values.map((item: string) => (
-                    <SelectItem value={item} key={item} className="capitalize">
-                      {item}
-                    </SelectItem>
-                  ))}
+                  {field.values &&
+                    field?.values.map((item: string) => (
+                      <SelectItem
+                        value={item}
+                        key={item}
+                        className="capitalize"
+                      >
+                        {item}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
             </div>
@@ -89,12 +104,17 @@ const InputForm = ({ data,cb }: Props) => {
 
         if (field.type === "switch")
           return (
-            <div key={key} className="flex flex-col gap-y-2">
-              <Label className="mb-1">{key} :</Label>
+            <div
+              key={key}
+              className="flex items-center  gap-x-5"
+            >
+              <Label className="w-2/6">{key} :</Label>
               <Switch
                 name={key}
-                  checked={values[key]}
-                  onCheckedChange={()=>setValues((prev) => ({ ...prev, [key]: !values[key] }))}
+                checked={values[key]}
+                onCheckedChange={() =>
+                  setValues((prev) => ({ ...prev, [key]: !values[key] }))
+                }
                 aria-readonly
               />
               {/* <RadioGroup
@@ -117,7 +137,7 @@ const InputForm = ({ data,cb }: Props) => {
 
         return null;
       })}
-      <Button type="submit" className="w-full">
+      <Button type="submit" className="w-full mt-8">
         Save
       </Button>
     </form>

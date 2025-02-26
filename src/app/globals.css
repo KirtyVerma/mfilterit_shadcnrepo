@@ -31,6 +31,14 @@ body {
       border-radius: 10px;
     }
   }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge and Firefox */
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
 }
 
 @layer base {
@@ -62,7 +70,7 @@ body {
     --radius: 0.5rem;
   }
   .dark {
-    --background: 215.3,25%,26.7%;
+    --background: 215.3, 25%, 26.7%;
     --foreground: 0 0% 98%;
     --card: 221, 39%, 11%;
     --card-foreground: 0 0% 98%;
