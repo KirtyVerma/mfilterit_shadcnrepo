@@ -38,7 +38,7 @@ export default function TrackerConfig() {
           <InputForm data={DATA} cb={handleSubmit} />
         </div>
 
-        <div className="sticky top-0 flex justify-center w-full bg-white rounded-lg py-5 h-[75vh] ">
+        <div className="sticky top-0 flex justify-center border-box w-full bg-white rounded-lg p-5 h-[75vh] ">
           <CodeBlock code = "fdkjfhdhj"/>
         </div>
       </div>

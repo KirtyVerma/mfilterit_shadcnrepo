@@ -1,22 +1,13 @@
-import { useState } from "react";
-import { Copy } from "lucide-react";
-
 import { Card, CardContent } from "@/components/ui/card";
+import { Copy, Loader2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-
-interface CodeBlockProps {
-  code?: string;
-  language?: string;
-  fetchData?: Function;
-}
 
 const dummyCode = `<script>
 (function(m, f, i, l, t, e, r) {
@@ -34,30 +25,24 @@ const dummyCode = `<script>
     mf("mf_tracking_type", "pageviews"); 
 </script> `;
 
+interface CodeBlockProps {
+  code?: string;
+  language?: string;
+  isloading?: boolean;
+}
 const CodeBlock = ({
   code,
   language = "javascript",
-  fetchData,
+  isloading = false,
 }: CodeBlockProps) => {
   const { toast } = useToast();
-  const [codeSnippet, setcodeSnippet] = useState(dummyCode);
-  const [preview, setpreview] = useState(Boolean(fetchData));
-  const handleClick = async () => {
-    if (!fetchData) throw new Error("data fetch fnc not passed");
-
-    await fetchData().then((code: string) => {
-      setcodeSnippet(code);
-      setpreview(false);
-    });
-  };
   const copyToClipboard = () => {
-  
-    navigator.clipboard.writeText(code?code:codeSnippet);
+    if (!code) return;
+    navigator.clipboard.writeText(code);
     const toastObj = toast({
       description: "Tracker code copied to clipboard!",
       className: "bg-green-500 text-white",
     });
-
     setTimeout(() => {
       toastObj.dismiss();
     }, 1000);
@@ -82,14 +67,18 @@ const CodeBlock = ({
           </TooltipProvider>
         </div>
         <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300">
-          {code ? code : codeSnippet}
+          {code ? code : dummyCode}
         </pre>
       </CardContent>
-      {preview && (
-        <div className="absolute top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
-          <Button className="rounded-sm" onClick={handleClick}>
-            Preview
-          </Button>
+      {!code && (
+        <div className="absolute capitalize top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
+          {isloading ? (
+            <span>
+              <Loader2 className="w-10 h-10 text-gray-400 animate-spin text-primary" />
+            </span>
+          ) : (
+            "Click to view Preview"
+          )}
         </div>
       )}
     </Card>

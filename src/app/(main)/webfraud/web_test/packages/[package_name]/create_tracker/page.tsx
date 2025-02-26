@@ -6,7 +6,7 @@ import CodeBlock from "../../../CodeBlock";
 import InputForm from "../../../Form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import TRACKER_DATA from "../../../create_tracker.json";
+import TRACKER_DATA from "./create_tracker.json";
 import {
   Select,
   SelectContent,
@@ -14,9 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useGetPreview } from "../../../api";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export default function CreateTracker() {
   const packageName = useParams().package_name;
+  const { mutate, data, isLoading, isSuccess } = useGetPreview();
   const [values, setValues] = useState({
     packageName: packageName,
     trackertype: "impression",
@@ -24,13 +28,10 @@ export default function CreateTracker() {
   // Dummy code to display on the right side
   function handleSubmit(formData: any) {
     const fields = { ...values, ...formData };
+    mutate();
     console.log("create Trackers Form Data:", fields);
   }
-  const getPreview= () => new Promise((resolve, reject) => {
-    setTimeout(() => {  
-      resolve("this is preview code")
-    },500)
-  });
+  console.log(data);
 
   return (
     <div className="relative py-2 px-8">
@@ -41,17 +42,21 @@ export default function CreateTracker() {
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
         <div className=" bg-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
-          {[...Array(8)].map((x) => ( //just for testing remove afterwards
-            <div className="flex items-center justify-between gap-x-5">
-              <Label className="w-2/6">package_name :</Label>
-              <Input
-                className="w-4/6"
-                placeholder="Enter value"
-                value={values["packageName"] || ""}
-                disabled
-              />
-            </div>
-          ))}
+          {[...Array(8)].map(
+            (
+              x //just for testing remove afterwards
+            ) => (
+              <div className="flex items-center justify-between gap-x-5">
+                <Label className="w-2/6">package_name :</Label>
+                <Input
+                  className="w-4/6"
+                  placeholder="Enter value"
+                  value={values["packageName"] || ""}
+                  disabled
+                />
+              </div>
+            )
+          )}
           <div className="flex items-center justify-between gap-x-5">
             <Label className="w-2/6">Tracker Type :</Label>
             <Select
@@ -73,15 +78,22 @@ export default function CreateTracker() {
               </SelectContent>
             </Select>
           </div>
-          {TRACKER_DATA[values.trackertype] && (
+          {(TRACKER_DATA as any)[values.trackertype] && (
             <InputForm
-              data={TRACKER_DATA[values.trackertype]}
+              data={(TRACKER_DATA as any)[values.trackertype]}
               cb={handleSubmit}
             />
           )}
+          <Button className="capitalize w-full mt-8" onClick={()=>mutate()}>
+            get Preview
+          </Button>
         </div>
-        <div className="sticky top-0 flex justify-center w-full bg-white rounded-lg py-5 h-[75vh] ">
-          <CodeBlock fetchData={getPreview}/>
+        <div className="sticky top-0 flex justify-center w-full bg-white rounded-lg p-5 h-[75vh] ">
+          {data ? (
+            <CodeBlock code={data} />
+          ) : (
+            <CodeBlock isloading={isLoading} />
+          )}
         </div>
       </div>
     </div>
