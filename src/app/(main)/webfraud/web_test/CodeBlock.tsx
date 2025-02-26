@@ -51,8 +51,8 @@ const CodeBlock = ({
     });
   };
   const copyToClipboard = () => {
-    if (!code) return;
-    navigator.clipboard.writeText(code);
+  
+    navigator.clipboard.writeText(code?code:codeSnippet);
     const toastObj = toast({
       description: "Tracker code copied to clipboard!",
       className: "bg-green-500 text-white",
@@ -82,8 +82,7 @@ const CodeBlock = ({
           </TooltipProvider>
         </div>
         <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300">
-          {/* {code ? code : dummyCode} */}
-          {codeSnippet}
+          {code ? code : codeSnippet}
         </pre>
       </CardContent>
       {preview && (
