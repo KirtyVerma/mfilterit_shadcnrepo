@@ -10,7 +10,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import React, { useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 
 type DataFromat =
   | {
@@ -25,25 +30,29 @@ type Props = {
   cb: Function;
 };
 
-const InputForm = ({ data, cb }: Props) => {
-  const [values, setValues] = useState(() => {
-    // Initialize state with default values
-    return Object.keys(data).reduce(
-      (acc, key: any) => {
-        if (data[key].type === "dropdown")
-          acc[key] = data[key]?.values?.[0] || "";
-        else if (data[key].type === "switch") acc[key] = false;
-        else acc[key] = "";
-        return acc;
-      },
-      {} as Record<string, any>
+const InputForm = forwardRef(({ data, cb }: Props, ref: any) => {
+  const [values, setValues] = useState<Record<string, any>>({});
+  useEffect(() => {
+    setValues(
+      Object.keys(data).reduce(
+        (acc, key: any) => {
+          if (data[key].type === "dropdown")
+            acc[key] = data[key]?.values?.[0] ;
+          else if (data[key].type === "switch") acc[key] = false;
+          else acc[key] = "";
+          return acc;
+        },
+        {} as Record<string, any>
+      )
     );
-  });
+  }, [data]);
 
-  function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  function handleSubmit() {
     cb(values); // Call the callback function with form data
   }
+  useImperativeHandle(ref, () => ({
+    submit: handleSubmit,
+  }));
 
   return (
     <form className="flex flex-col gap-y-4" onSubmit={handleSubmit}>
@@ -104,10 +113,7 @@ const InputForm = ({ data, cb }: Props) => {
 
         if (field.type === "switch")
           return (
-            <div
-              key={key}
-              className="flex items-center  gap-x-5"
-            >
+            <div key={key} className="flex items-center  gap-x-5">
               <Label className="w-2/6">{key} :</Label>
               <Switch
                 name={key}
@@ -137,51 +143,11 @@ const InputForm = ({ data, cb }: Props) => {
 
         return null;
       })}
-      <Button type="submit" className="w-full mt-8">
-        Save
-      </Button>
+      {/* <Button type="submit" className="w-full mt-8">
+          Save
+        </Button> */}
     </form>
   );
-};
+});
 
 export default InputForm;
-
-{
-  /* 
-<div className="flex items-center justify-between gap-x-5">
-        <Label className="w-2/6">Package Name :</Label>
-        <Input
-          className=" w-4/6"
-          placeholder="Enter tracker name"
-          value={"packageName"}
-          disabled
-        />
-      </div>
-      <div className="flex items-center justify-between gap-x-5">
-        <Label className="w-2/6">Tracker Type :</Label>
-        <Select>
-          <SelectTrigger className="w-4/6 capitalize">
-            <SelectValue placeholder="impression" />
-          </SelectTrigger>
-          <SelectContent>
-            {["impression", "visit", "click", "event", "s2s"].map((Item, i) => (
-              <SelectItem value={Item} key={i} className="capitalize">
-                {Item}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <div className="flex items-center justify-between gap-x-5">
-        <Label className="w-2/6">Setting 1 : </Label>
-        <Input className="  w-4/6" placeholder="Setting 1" />
-      </div>
-      <div className="flex items-center justify-between gap-x-5">
-        <Label className="w-2/6">Setting 2 : </Label>
-        <Input className=" w-4/6" placeholder="Setting 2" />
-      </div>
-      <div className="flex justify-end">
-        <Button className="capitalize mt-2 mb-5">Generate Tracker</Button>
-      </div>
-    </div> */
-}

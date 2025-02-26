@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import CodeBlock from "../../../CodeBlock";
 import InputForm from "../../../Form";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,7 @@ import { Loader2 } from "lucide-react";
 export default function CreateTracker() {
   const packageName = useParams().package_name;
   const { mutate, data, isLoading, isSuccess } = useGetPreview();
+  const formRef: any = useRef();
   const [values, setValues] = useState({
     packageName: packageName,
     trackertype: "impression",
@@ -28,10 +29,8 @@ export default function CreateTracker() {
   // Dummy code to display on the right side
   function handleSubmit(formData: any) {
     const fields = { ...values, ...formData };
-    mutate();
     console.log("create Trackers Form Data:", fields);
   }
-  console.log(data);
 
   return (
     <div className="relative py-2 px-8">
@@ -80,13 +79,27 @@ export default function CreateTracker() {
           </div>
           {(TRACKER_DATA as any)[values.trackertype] && (
             <InputForm
+              ref={formRef}
               data={(TRACKER_DATA as any)[values.trackertype]}
               cb={handleSubmit}
             />
           )}
-          <Button className="capitalize w-full mt-8" onClick={()=>mutate()}>
-            get Preview
-          </Button>
+          <div className="flex gap-x-5">
+            <Button
+              type="submit"
+              className="w-full mt-8"
+              onClick={() => formRef?.current?.submit()}
+            >
+              create tracker
+            </Button>
+            <Button
+              className="capitalize w-full mt-8"
+              onClick={() => mutate()}
+              disabled={isLoading}
+            >
+              get Preview
+            </Button>
+          </div>
         </div>
         <div className="sticky top-0 flex justify-center w-full bg-white rounded-lg p-5 h-[75vh] ">
           {data ? (
