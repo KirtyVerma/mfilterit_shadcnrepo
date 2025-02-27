@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import React from "react";
 import CodeBlock from "../../CodeBlock";
-import DynamicInputForm from "../../Form";
+import InputForm from "../../Form";
 
 export default function TrackerConfig() {
   const packageName = useParams().package_name;
@@ -35,7 +35,7 @@ export default function TrackerConfig() {
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
         <div className=" bg-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
-          <DynamicInputForm data={DATA} />
+          <InputForm data={DATA} />
         </div>
 
         <div className="sticky top-0 flex justify-center border-box w-full bg-white rounded-lg p-5 h-[75vh] ">

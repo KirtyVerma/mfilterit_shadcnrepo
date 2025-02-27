@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Copy, Loader2 } from "lucide-react";
+import { ClipboardCheck, Copy, Loader2 } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const dummyCode = `<script>
 (function(m, f, i, l, t, e, r) {
@@ -36,14 +37,17 @@ const CodeBlock = ({
   isloading = false,
 }: CodeBlockProps) => {
   const { toast } = useToast();
+  const [copy, setcopy] = useState(false);
   const copyToClipboard = () => {
     if (!code) return;
     navigator.clipboard.writeText(code);
+    setcopy(true);
     const toastObj = toast({
       description: "Tracker code copied to clipboard!",
       className: "bg-green-500 text-white",
     });
     setTimeout(() => {
+      setcopy(false);
       toastObj.dismiss();
     }, 1000);
   };
@@ -59,7 +63,11 @@ const CodeBlock = ({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="ghost" size="icon" onClick={copyToClipboard}>
-                  <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
+                  {!copy ? (
+                    <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
+                  ) : (
+                    <ClipboardCheck className="w-4 h-4 text-gray-400 hover:text-white" />
+                  )}
                 </Button>
               </TooltipTrigger>
               <TooltipContent>{"Copy"}</TooltipContent>
@@ -71,7 +79,7 @@ const CodeBlock = ({
         </pre>
       </CardContent>
       {!code && (
-        <div className="absolute capitalize top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
+        <div className="absolute capitalize rounded-lg top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
           {isloading ? (
             <span>
               <Loader2 className="w-10 h-10 text-gray-400 animate-spin text-primary" />

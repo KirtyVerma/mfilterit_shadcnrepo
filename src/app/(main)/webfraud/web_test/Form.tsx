@@ -26,18 +26,24 @@ type DataFromat =
       type: "input" | "switch";
     };
 type Props = {
-  data: DataFromat[];
+  data: Record<string, DataFromat>;
 };
 
 const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
   const [values, setValues] = useState<Record<string, any>>({});
+
   useEffect(() => {
-    setValues(
+    setValues(() =>
       Object.keys(data).reduce(
         (acc, key: any) => {
-          if (data[key].type === "dropdown") acc[key] = data[key]?.values?.[0];
-          else if (data[key].type === "switch") acc[key] = false;
-          else acc[key] = "";
+          const field = data[key];
+          if (field.type === "dropdown") {
+            acc[key] = field.values?.[0] || "";
+          } else if (field.type === "switch") {
+            acc[key] = true;
+          } else {
+            acc[key] = "";
+          }
           return acc;
         },
         {} as Record<string, any>
@@ -46,7 +52,7 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
   }, [data]);
 
   function handleSubmit() {
-    return values; // Call the callback function with form data
+    return values;
   }
   useImperativeHandle(ref, () => ({
     values: handleSubmit,
@@ -85,7 +91,6 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
               <Label className="w-2/6">{key} :</Label>
               <Select
                 name={key}
-                value={values[key]}
                 onValueChange={(val) =>
                   setValues((prev) => ({ ...prev, [key]: val }))
                 }
