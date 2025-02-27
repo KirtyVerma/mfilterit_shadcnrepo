@@ -27,17 +27,15 @@ type DataFromat =
     };
 type Props = {
   data: DataFromat[];
-  cb: Function;
 };
 
-const InputForm = forwardRef(({ data, cb }: Props, ref: any) => {
+const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
   const [values, setValues] = useState<Record<string, any>>({});
   useEffect(() => {
     setValues(
       Object.keys(data).reduce(
         (acc, key: any) => {
-          if (data[key].type === "dropdown")
-            acc[key] = data[key]?.values?.[0] ;
+          if (data[key].type === "dropdown") acc[key] = data[key]?.values?.[0];
           else if (data[key].type === "switch") acc[key] = false;
           else acc[key] = "";
           return acc;
@@ -48,10 +46,10 @@ const InputForm = forwardRef(({ data, cb }: Props, ref: any) => {
   }, [data]);
 
   function handleSubmit() {
-    cb(values); // Call the callback function with form data
+    return values; // Call the callback function with form data
   }
   useImperativeHandle(ref, () => ({
-    submit: handleSubmit,
+    values: handleSubmit,
   }));
 
   return (
@@ -150,4 +148,4 @@ const InputForm = forwardRef(({ data, cb }: Props, ref: any) => {
   );
 });
 
-export default InputForm;
+export default DynamicInputForm;

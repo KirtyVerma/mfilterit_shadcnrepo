@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import React, { useRef, useState } from "react";
 import CodeBlock from "../../../CodeBlock";
-import InputForm from "../../../Form";
+import DynamicInputForm from "../../../Form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import TRACKER_DATA from "./create_tracker.json";
@@ -27,7 +27,8 @@ export default function CreateTracker() {
     trackertype: "impression",
   });
   // Dummy code to display on the right side
-  function handleSubmit(formData: any) {
+  function handleSubmit() {
+    const formData =formRef?.current?.values()
     const fields = { ...values, ...formData };
     console.log("create Trackers Form Data:", fields);
   }
@@ -78,17 +79,16 @@ export default function CreateTracker() {
             </Select>
           </div>
           {(TRACKER_DATA as any)[values.trackertype] && (
-            <InputForm
+            <DynamicInputForm
               ref={formRef}
               data={(TRACKER_DATA as any)[values.trackertype]}
-              cb={handleSubmit}
             />
           )}
           <div className="flex gap-x-5">
             <Button
               type="submit"
               className="w-full mt-8"
-              onClick={() => formRef?.current?.submit()}
+              onClick={() => handleSubmit()}
             >
               create tracker
             </Button>
