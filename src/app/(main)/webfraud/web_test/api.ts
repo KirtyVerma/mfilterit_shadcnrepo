@@ -87,14 +87,11 @@ const WEB_TEST_APIS = {
       }, 2000);
     });
   },
-  getPackage({ queryKey }:any): Promise<any> {
-    const [_key, payload] = queryKey; //
-    const packageName = payload.packageName 
-    console.log(TRACKER.filter(item => (item.package_name === packageName)))
+  getPackage({ queryKey }: any): Promise<any> {
+    const [_key, packageName] = queryKey; //
     return new Promise((resolve, reject) => {
       setTimeout(() => {
-        // console.log(TRACKER.filter((item) => item.package_name === packageName ))
-        resolve(TRACKER);
+        resolve(TRACKER.filter((item) => item.package_name === packageName));
       }, 2000);
     });
   },
@@ -106,11 +103,10 @@ function useGetPreview() {
 function useGetPackages() {
   return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
 }
-function useGetPackage(package_name: string) {
+function useGetPackage(packageName: string) {
   return useQuery({
-    queryKey: ["package", package_name],
+    queryKey: ["package", packageName],
     queryFn: WEB_TEST_APIS.getPackage,
-    initialData: { package_name },
   });
 }
 
