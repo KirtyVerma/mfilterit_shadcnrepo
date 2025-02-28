@@ -45,13 +45,13 @@ export default function ItemTable({
       <TableHeader>
         <TableRow className="bg-gray-300">
           {FieldNames.map((field) => (
-            <TableHead className="capitalize text-center w-[200px] py-3 px-4 tex-left text-sm font-medium text-gray-600">
+            <TableHead key={field} className="capitalize text-center w-[200px] py-3 px-4 tex-left text-sm font-medium text-gray-600">
               {field}
             </TableHead>
           ))}
           {extraFields
-            ? extraFields.map((field) => (
-                <TableHead className="capitalize text-center w-[200px] py-3 px-4 tex-left text-sm font-medium text-gray-600">
+            ? extraFields.map((field, i) => (
+                <TableHead key={i} className="capitalize text-center w-[200px] py-3 px-4 tex-left text-sm font-medium text-gray-600">
                   {field.title}
                 </TableHead>
               ))

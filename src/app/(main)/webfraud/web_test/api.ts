@@ -1,4 +1,22 @@
+import { useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "react-query";
+import { PACKAGES, TRACKER } from "./DATA";
+
+const fnc = ({ message, type }: any) => {
+  const { toast } = useToast();
+  let className = "text-white";
+  if (type === "success") className = className + "bg-green-500 ";
+  else if (type === "warning") className = className + "bg-green-500 ";
+  else className = className + "bg-red-500 ";
+
+  const toastObj = toast({
+    description: message,
+    className: className,
+  });
+  setTimeout(() => {
+    toastObj.dismiss();
+  }, 1000);
+};
 
 function translateStatusToErrorMessage(status: number) {
   switch (status) {
@@ -62,22 +80,38 @@ const WEB_TEST_APIS = {
       }, 2000);
     });
   },
-  //   getAll(page = 1, limit = 100) {
-  //     return (
-  //       fetch(`${url}?_page=${page}&_limit=${limit}`)
-  //         // .then(delay(600))
-  //         .then(checkStatus)
-  //         .then(parseJSON)
-  //         .catch((error) => {
-  //           let errorMessage = translateStatusToErrorMessage(error);
-  //           throw new Error(errorMessage);
-  //         })
-  //     );
-  //   },
+  getPackages(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(PACKAGES);
+      }, 2000);
+    });
+  },
+  getPackage({ queryKey }:any): Promise<any> {
+    const [_key, payload] = queryKey; //
+    const packageName = payload.packageName 
+    console.log(TRACKER.filter(item => (item.package_name === packageName)))
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        // console.log(TRACKER.filter((item) => item.package_name === packageName ))
+        resolve(TRACKER);
+      }, 2000);
+    });
+  },
 };
 
 function useGetPreview() {
   return useMutation({ mutationFn: WEB_TEST_APIS.getPreview });
 }
+function useGetPackages() {
+  return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
+}
+function useGetPackage(package_name: string) {
+  return useQuery({
+    queryKey: ["package", package_name],
+    queryFn: WEB_TEST_APIS.getPackage,
+    initialData: { package_name },
+  });
+}
 
-export { useGetPreview };
+export { useGetPreview, useGetPackages, useGetPackage };

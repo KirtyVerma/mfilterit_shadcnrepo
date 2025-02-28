@@ -5,9 +5,13 @@ import { Button } from "@/components/ui/button";
 import ItemTable from "../ItemTable";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useGetPackage } from "../../api";
+import Loader from "../../Loader";
 
 export default function ListTrackers() {
-  const packageName = useParams().package_name;
+  const packageName :string = useParams().package_name;
+  const { data, isLoading } = useGetPackage(packageName);
+  // console.log(data);
   const nav = useRouter();
   const extrafields = [
     {
@@ -57,11 +61,16 @@ export default function ListTrackers() {
     <div className="py-2 px-8">
       {renderHeader()}
       <div className=" w-full px-3 py-2 bg-white rounded-xl mt-5">
-        <ItemTable
-          data={TRACKER.filter((item) => item.package_name === packageName)}
+      {isLoading ? (
+          <Loader/>
+        ) : (
+          <ItemTable
+          data={data}
           selectable={false}
           extraFields={extrafields}
         />
+        )}
+        
       </div>
     </div>
   );
