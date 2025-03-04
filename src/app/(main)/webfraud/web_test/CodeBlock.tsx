@@ -53,6 +53,7 @@ const CodeBlock = ({
   };
 
   return (
+    <>
     <Card
       className={`relative w-full max-w-3xl bg-[#1e1e1e] text-white border border-[#3c3c3c] rounded-lg overflow-auto ${!code && "overflow-hidden"} no- scrollbar`}
     >
@@ -75,9 +76,10 @@ const CodeBlock = ({
           </TooltipProvider>
         </div>
         <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300">
-          {code ? code : dummyCode}
+          {formatCode(code ? code : dummyCode)}
         </pre>
       </CardContent>
+    </Card>
       {!code && (
         <div className="absolute capitalize rounded-lg top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
           {isloading ? (
@@ -89,8 +91,16 @@ const CodeBlock = ({
           )}
         </div>
       )}
-    </Card>
+    </>
   );
 };
 
 export default CodeBlock;
+
+const formatCode = (unstructuredCode) => {
+  return unstructuredCode
+    .replace(/(\{|\})/g, "\n$1\n") // Add new lines around braces
+    .replace(/;/g, ";\n") // New line after semicolons
+    .replace(/\n\s*\n/g, "\n") // Remove extra blank lines
+    .replace(/\t/g, "  "); // Convert tabs to spaces
+};

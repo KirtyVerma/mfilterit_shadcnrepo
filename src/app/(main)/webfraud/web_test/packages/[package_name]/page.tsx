@@ -9,7 +9,7 @@ import { useGetPackage } from "../../api";
 import Loader from "../../Loader";
 
 export default function ListTrackers() {
-  const packageName: string = useParams().package_name;
+  const packageName:any = useParams()?.package_name;
   const { data, isLoading } = useGetPackage(packageName);
   const nav = useRouter();
   const extrafields = [

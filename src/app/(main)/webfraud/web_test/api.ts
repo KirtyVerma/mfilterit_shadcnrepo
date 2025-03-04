@@ -1,49 +1,40 @@
-import { useToast } from "@/hooks/use-toast";
+import { toast, useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "react-query";
 import { PACKAGES, TRACKER } from "./DATA";
+import axios from "axios";
 
-const fnc = ({ message, type }: any) => {
-  const { toast } = useToast();
-  let className = "text-white";
-  if (type === "success") className = className + "bg-green-500 ";
-  else if (type === "warning") className = className + "bg-green-500 ";
-  else className = className + "bg-red-500 ";
-
-  const toastObj = toast({
-    description: message,
-    className: className,
-  });
-  setTimeout(() => {
-    toastObj.dismiss();
-  }, 1000);
+type ToastType = {
+  description: string;
+  title?: string;
+  duration?: number;
 };
-
-function translateStatusToErrorMessage(status: number) {
-  switch (status) {
-    case 401:
-      return "Please login again.";
-    case 403:
-      return "You do not have permission to view the photos.";
-    default:
-      return "There was an error retrieving the photos. Please try again.";
+class Toast {
+  static default(data: ToastType) {
+    const { title, description, duration } = data;
+    toast({
+      title: title || "",
+      description: description,
+      duration: duration || 1500,
+      className: "text-white bg-green-500 capitalize ",
+    });
   }
-}
-
-function checkStatus(response: Response) {
-  if (response.ok) {
-    return response;
-  } else {
-    const httpErrorInfo = {
-      status: response.status,
-      statusText: response.statusText,
-      url: response.url,
-    };
-    console.log(
-      `logging http details for debugging: ${JSON.stringify(httpErrorInfo)}`
-    );
-
-    let errorMessage = translateStatusToErrorMessage(httpErrorInfo.status);
-    throw new Error(errorMessage);
+  static success(data: ToastType) {
+    const { title, description, duration } = data;
+    toast({
+      title: title || "success",
+      description: description,
+      duration: duration || 1500,
+      className: "text-white bg-green-500 capitalize ",
+    });
+  }
+  static error(data: ToastType) {
+    const { title, description, duration } = data;
+    toast({
+      title: title || "error",
+      description: description,
+      duration: duration || 1500,
+      className: "text-white bg-red-500 capitalize ",
+    });
   }
 }
 
@@ -51,11 +42,6 @@ function parseJSON(response: Response) {
   return response.json();
 }
 
-function delay(ms: number) {
-  return function (x: any) {
-    return new Promise((resolve) => setTimeout(() => resolve(x), ms));
-  };
-}
 const dummyCode = `<script>
 (function(m, f, i, l, t, e, r) {
     m[t] = m[t] || function() {
@@ -72,6 +58,10 @@ const dummyCode = `<script>
     mf("mf_tracking_type", "pageviews"); 
 </script> `;
 
+const BASE_URL =
+  "https://hu5lf9ft08.execute-api.ap-south-1.amazonaws.com/api/v1/";
+// "config_dashboard/customers"
+
 const WEB_TEST_APIS = {
   getPreview(): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -80,16 +70,15 @@ const WEB_TEST_APIS = {
       }, 2000);
     });
   },
-  getPackages(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(PACKAGES);
-      }, 2000);
-    });
+  async getPackages(): Promise<any> {
+    const data: any = await axios.get(BASE_URL + "config_dashboard/customers");
+    console.log(data.data);
+    return data.data.customers;
   },
   getPackage({ queryKey }: any): Promise<any> {
-    const [_key, packageName] = queryKey; //
+    const [_key, packageName] = queryKey;
     return new Promise((resolve, reject) => {
+      if (!packageName) return [];
       setTimeout(() => {
         resolve(TRACKER.filter((item) => item.package_name === packageName));
       }, 2000);
@@ -98,12 +87,15 @@ const WEB_TEST_APIS = {
 };
 
 function useGetPreview() {
-  return useMutation({ mutationFn: WEB_TEST_APIS.getPreview });
+  return useMutation({
+    mutationFn: WEB_TEST_APIS.getPreview,
+    // onSuccess: () => Toast.success({ description: "it works on success" }),
+  });
 }
 function useGetPackages() {
   return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
 }
-function useGetPackage(packageName: string) {
+function useGetPackage(packageName: string | undefined) {
   return useQuery({
     queryKey: ["package", packageName],
     queryFn: WEB_TEST_APIS.getPackage,
@@ -111,3 +103,32 @@ function useGetPackage(packageName: string) {
 }
 
 export { useGetPreview, useGetPackages, useGetPackage };
+
+// function checkStatus(response: Response) {
+//   if (response.ok) {
+//     return response;
+//   } else {
+//     const httpErrorInfo = {
+//       status: response.status,
+//       statusText: response.statusText,
+//       url: response.url,
+//     };
+//     console.log(
+//       `logging http details for debugging: ${JSON.stringify(httpErrorInfo)}`
+//     );
+
+//     let errorMessage = translateStatusToErrorMessage(httpErrorInfo.status);
+//     throw new Error(errorMessage);
+//   }
+// }
+
+// function translateStatusToErrorMessage(status: number) {
+//   switch (status) {
+//     case 401:
+//       return "Please login again.";
+//     case 403:
+//       return "You do not have permission to view the photos.";
+//     default:
+//       return "There was an error retrieving the photos. Please try again.";
+//   }
+// }
