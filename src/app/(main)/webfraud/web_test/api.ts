@@ -63,13 +63,6 @@ const BASE_URL =
 // "config_dashboard/customers"
 
 const WEB_TEST_APIS = {
-  getPreview(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(dummyCode);
-      }, 2000);
-    });
-  },
   async getPackages(): Promise<any> {
     const data: any = await axios.get(BASE_URL + "config_dashboard/customers");
     return data.data.customers;
@@ -79,14 +72,19 @@ const WEB_TEST_APIS = {
     const data: any = await axios.get(BASE_URL + "config_dashboard/trackers");
     return data.data;
   },
+  getPreview(): Promise<string> {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve(dummyCode);
+      }, 2000);
+    });
+  },
+  async getPlatforms(): Promise<any> {
+    const data: any = await axios.get(BASE_URL + "config_dashboard/platforms");
+    return data.data.data;
+  },
 };
 
-function useGetPreview() {
-  return useMutation({
-    mutationFn: WEB_TEST_APIS.getPreview,
-    // onSuccess: () => Toast.success({ description: "it works on success" }),
-  });
-}
 function useGetPackages() {
   return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
 }
@@ -96,8 +94,20 @@ function useGetPackage(packageName: string | undefined) {
     queryFn: WEB_TEST_APIS.getPackage,
   });
 }
+function useGetPlatforms() {
+  return useQuery({
+    queryKey: "platforms",
+    queryFn: WEB_TEST_APIS.getPlatforms,
+  });
+}
+function useGetPreview() {
+  return useMutation({
+    mutationFn: WEB_TEST_APIS.getPreview,
+    // onSuccess: () => Toast.success({ description: "it works on success" }),
+  });
+}
 
-export { useGetPreview, useGetPackages, useGetPackage };
+export { useGetPreview, useGetPackages, useGetPackage, useGetPlatforms };
 
 // function checkStatus(response: Response) {
 //   if (response.ok) {

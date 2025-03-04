@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CodeBlock from "../../../CodeBlock";
 import InputForm from "../../../Form";
 import { Input } from "@/components/ui/input";
@@ -14,21 +14,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetPreview } from "../../../api";
+import { useGetPlatforms, useGetPreview } from "../../../api";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import Loader from "../../../Loader";
 
 export default function CreateTracker() {
   const packageName = useParams().package_name;
-  const { mutate, data, isLoading, isSuccess } = useGetPreview();
+  const { mutate: getPreview, data: preview, isLoading: pl } = useGetPreview();
+  const { data: platforms, isLoading } = useGetPlatforms();
   const formRef: any = useRef();
   const [values, setValues] = useState({
     packageName: packageName,
     trackertype: "impression",
+    platform: "",
   });
+  useEffect(() => {
+    platforms && setValues((prev) => ({ ...prev, ["platform"]: platforms[0] }));
+  }, [platforms]);
   // Dummy code to display on the right side
   function handleSubmit() {
-    const formData =formRef?.current?.values()
+    const formData = formRef?.current?.values();
     const fields = { ...values, ...formData };
     console.log("create Trackers Form Data:", fields);
   }
@@ -42,21 +48,41 @@ export default function CreateTracker() {
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
         <div className=" bg-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
-          {[...Array(8)].map(
-            (
-              x //just for testing remove afterwards
-            ) => (
-              <div className="flex items-center justify-between gap-x-5">
-                <Label className="w-2/6">package_name :</Label>
-                <Input
-                  className="w-4/6"
-                  placeholder="Enter value"
-                  value={values["packageName"] || ""}
-                  disabled
-                />
-              </div>
-            )
-          )}
+          <div className="flex items-center justify-between gap-x-5">
+            <Label className="w-2/6">package_name :</Label>
+            <Input
+              className="w-4/6"
+              placeholder="Enter value"
+              value={values["packageName"] || ""}
+              disabled
+            />
+          </div>
+          <div className="flex items-center justify-between gap-x-5">
+            <Label className="w-2/6">platforms :</Label>
+            {/* {platforms ? ( */}
+            <Select
+              onValueChange={(val) =>
+                setValues((prev) => ({ ...prev, platform: val }))
+              }
+              disabled={isLoading}
+            >
+              <SelectTrigger className="w-4/6 capitalize">
+                {platforms ? (
+                  <SelectValue placeholder={values.platform} />
+                ) : (
+                  <Loader className="!h-5 !w-5" />
+                )}
+              </SelectTrigger>
+              <SelectContent>
+                {platforms?.map((Item: any, i: any) => (
+                  <SelectItem value={Item} key={i} className="capitalize">
+                    {Item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex items-center justify-between gap-x-5">
             <Label className="w-2/6">Tracker Type :</Label>
             <Select
@@ -94,19 +120,15 @@ export default function CreateTracker() {
             </Button>
             <Button
               className="capitalize w-full mt-8"
-              onClick={() => mutate()}
-              disabled={isLoading}
+              onClick={() => getPreview()}
+              disabled={pl}
             >
               get Preview
             </Button>
           </div>
         </div>
         <div className="sticky top-0 flex justify-center w-full bg-white rounded-lg p-5 h-[75vh] ">
-          {data ? (
-            <CodeBlock code={data} />
-          ) : (
-            <CodeBlock isloading={isLoading} />
-          )}
+          {pl ? <CodeBlock code={preview} /> : <CodeBlock isloading={pl} />}
         </div>
       </div>
     </div>
