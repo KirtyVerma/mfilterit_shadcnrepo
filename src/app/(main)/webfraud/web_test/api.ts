@@ -72,17 +72,12 @@ const WEB_TEST_APIS = {
   },
   async getPackages(): Promise<any> {
     const data: any = await axios.get(BASE_URL + "config_dashboard/customers");
-    console.log(data.data);
     return data.data.customers;
   },
-  getPackage({ queryKey }: any): Promise<any> {
+  async getPackage({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
-    return new Promise((resolve, reject) => {
-      if (!packageName) return [];
-      setTimeout(() => {
-        resolve(TRACKER.filter((item) => item.package_name === packageName));
-      }, 2000);
-    });
+    const data: any = await axios.get(BASE_URL + "config_dashboard/trackers");
+    return data.data;
   },
 };
 

@@ -66,26 +66,23 @@ export default function ItemTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {currentItems.map((items, i) => (
+          {currentItems.map((items: any, i) => (
             <TableRow
               className={`${selectable && "cursor-pointer"}`}
               key={i}
               onClick={() => (onclick ? onclick(items) : null)}
             >
-              {Object.values(items).map(
-                (values, i) =>
-                  items === "status" ? (
-                    <TableCell key={i}>
-                      <Switch checked={values}  aria-readonly />
-                    </TableCell>
-                  ) : (
-                    <TableCell key={i} className="text-center">
-                      {values}
-                    </TableCell>
-                  )
-                // <TableCell key={i} className="text-center capitalize">
-                //   {`${values}`}
-                // </TableCell>
+              {Object.keys(items).map((key) =>
+                key === "status" ? (
+                  <TableCell key={key} className="flex justify-center">
+                    <Switch checked={items[key]} aria-readonly />
+                    {/* {items[key]} */}
+                  </TableCell>
+                ) : (
+                  <TableCell key={key} className="text-center">
+                    {items[key]}
+                  </TableCell>
+                )
               )}
 
               {extraFields

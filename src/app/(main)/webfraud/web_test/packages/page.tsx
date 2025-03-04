@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useGetPackages } from "../api";
 import Loader from "../Loader";
 
-
 export default function ListPackages() {
   const router = useRouter();
   const { data, isLoading } = useGetPackages();
@@ -25,9 +24,11 @@ export default function ListPackages() {
       </div>
       <div className="w-full px-3 py-2 bg-white rounded-xl mt-5">
         {isLoading ? (
-          <Loader/>
-        ) : (
+          <Loader />
+        ) : data.length ? (
           <ItemTable data={data} onclick={handleRowClick} />
+        ) : (
+          <p className="capitalize text-center"> No Package available</p>
         )}
       </div>
     </div>

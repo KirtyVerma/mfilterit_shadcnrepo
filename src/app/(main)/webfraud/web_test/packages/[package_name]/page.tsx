@@ -9,7 +9,7 @@ import { useGetPackage } from "../../api";
 import Loader from "../../Loader";
 
 export default function ListTrackers() {
-  const packageName:any = useParams()?.package_name;
+  const packageName: any = useParams()?.package_name;
   const { data, isLoading } = useGetPackage(packageName);
   const nav = useRouter();
   const extrafields = [
@@ -62,12 +62,10 @@ export default function ListTrackers() {
       <div className=" w-full px-3 py-2 bg-white rounded-xl mt-5">
         {isLoading ? (
           <Loader />
+        ) : data.length ? (
+          <ItemTable data={data} selectable={false} extraFields={extrafields} />
         ) : (
-          <ItemTable
-            data={data}
-            selectable={false}
-            extraFields={extrafields}
-          />
+          <p className="capitalize text-center"> No Trackers available</p>
         )}
       </div>
     </div>
