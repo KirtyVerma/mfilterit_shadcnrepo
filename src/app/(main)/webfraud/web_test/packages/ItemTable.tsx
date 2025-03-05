@@ -44,7 +44,7 @@ export default function ItemTable({
     <>
       <Table className="mt-4 ">
         <TableHeader>
-          <TableRow className="bg-gray-300">
+          <TableRow className="bg-gray-200 dark:text-white">
             {FieldNames.map((field) => (
               <TableHead
                 key={field}
@@ -74,9 +74,8 @@ export default function ItemTable({
             >
               {Object.keys(items).map((key) =>
                 key === "status" ? (
-                  <TableCell key={key} className="flex justify-center">
-                    <Switch checked={items[key]} aria-readonly />
-                    {/* {items[key]} */}
+                  <TableCell key={key} className="text-center capitalize">
+                    {items[key]?<p className="text-green-500">active</p>:<p className="text-red-400">active</p>}
                   </TableCell>
                 ) : (
                   <TableCell key={key} className="text-center">
@@ -88,7 +87,7 @@ export default function ItemTable({
               {extraFields
                 ? extraFields.map((field) => (
                     <TableCell
-                      className="flex justify-center gap-x-4"
+                      className=""
                       key={field.title}
                     >
                       {field.render(items)}

@@ -6,7 +6,7 @@ import CodeBlock from "../../../CodeBlock";
 import InputForm from "../../../Form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import TRACKER_DATA from "./create_tracker.json";
+import TRACKER_DATA from "./create_tracker";
 import {
   Select,
   SelectContent,
@@ -14,51 +14,67 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useGetPlatforms, useGetPreview } from "../../../api";
+import { useCreateTracker, useGetPlatforms, useGetPreview } from "../../../api";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import Loader from "../../../Loader";
 
 export default function CreateTracker() {
   const packageName = useParams().package_name;
-  const { mutate: getPreview, data: preview, isLoading: pl } = useGetPreview();
+  const {
+    mutate: createTracker,
+    data: newTracker,
+    isLoading: ctl,
+  } = useCreateTracker();
   const { data: platforms, isLoading } = useGetPlatforms();
   const formRef: any = useRef();
   const [values, setValues] = useState({
-    packageName: packageName,
-    trackertype: "impression",
+    package_name: packageName,
+    tracker_name: "",
+    tracker_type: "impression",
     platform: "",
+    pixel_level: "basic",
   });
   useEffect(() => {
     platforms && setValues((prev) => ({ ...prev, ["platform"]: platforms[0] }));
   }, [platforms]);
-  // Dummy code to display on the right side
+
   function handleSubmit() {
     const formData = formRef?.current?.values();
     const fields = { ...values, ...formData };
-    console.log("create Trackers Form Data:", fields);
+    createTracker(fields);
   }
 
   return (
     <div className="relative py-2 px-8">
-      <div className="px-8 py-5 bg-white rounded-xl flex items-center justify-between">
-        <h2 className="text-xl font-medium text-gray-900 capitalize">
+      <div className="px-8 py-5 bg-white dark:bg-gray-500 rounded-xl flex items-center justify-between">
+        <h2 className="text-xl font-medium text-gray-900 dark:text-white capitalize">
           create Trackers
         </h2>
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
-        <div className=" bg-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
+        <div className=" bg-white dark:bg-gray-500 dark:text-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
           <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6">package_name :</Label>
+            <Label className="w-2/6 capitalize text-md">package_name :</Label>
             <Input
-              className="w-4/6"
+              className="w-4/6 dark:bg-gray-300 outline-none dark:border-white"
               placeholder="Enter value"
-              value={values["packageName"] || ""}
+              value={values["package_name"]}
               disabled
             />
           </div>
           <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6">platforms :</Label>
+            <Label className="w-2/6 capitalize text-md">tracker_name :</Label>
+            <Input
+              className="w-4/6 dark:bg-gray-300 outline-none dark:border-white"
+              placeholder="Enter value"
+              value={values["tracker_name"]}
+              onChange={(e) =>
+                setValues((prev) => ({ ...prev, tracker_name: e.target.value }))
+              }
+            />
+          </div>
+          <div className="flex items-center justify-between gap-x-5">
+            <Label className="w-2/6 capitalize text-md">platforms :</Label>
             {/* {platforms ? ( */}
             <Select
               onValueChange={(val) =>
@@ -66,7 +82,7 @@ export default function CreateTracker() {
               }
               disabled={isLoading}
             >
-              <SelectTrigger className="w-4/6 capitalize">
+              <SelectTrigger className="w-4/6 dark:bg-gray-300 outline-none dark:border-white capitalize">
                 {platforms ? (
                   <SelectValue placeholder={values.platform} />
                 ) : (
@@ -84,14 +100,33 @@ export default function CreateTracker() {
           </div>
 
           <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6">Tracker Type :</Label>
+            <Label className="w-2/6 capitalize text-md">pixel level :</Label>
             <Select
               onValueChange={(val) =>
-                setValues((prev) => ({ ...prev, trackertype: val }))
+                setValues((prev) => ({ ...prev, pixel_level: val }))
               }
             >
-              <SelectTrigger className="w-4/6 capitalize">
-                <SelectValue placeholder={values.trackertype} />
+              <SelectTrigger className="w-4/6 dark:bg-gray-300 outline-none dark:border-white capitalize">
+                <SelectValue placeholder={values.pixel_level} />
+              </SelectTrigger>
+              <SelectContent>
+                {["basic", "intermediate", "advance"].map((Item, i) => (
+                  <SelectItem value={Item} key={i} className="capitalize">
+                    {Item}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center justify-between gap-x-5">
+            <Label className="w-2/6 capitalize text-md">Tracker Type :</Label>
+            <Select
+              onValueChange={(val) =>
+                setValues((prev) => ({ ...prev, tracker_type: val }))
+              }
+            >
+              <SelectTrigger className="w-4/6 dark:bg-gray-300 outline-none dark:border-white capitalize">
+                <SelectValue placeholder={values.tracker_type} />
               </SelectTrigger>
               <SelectContent>
                 {["impression", "visit", "click", "event", "s2s"].map(
@@ -104,31 +139,28 @@ export default function CreateTracker() {
               </SelectContent>
             </Select>
           </div>
-          {(TRACKER_DATA as any)[values.trackertype] && (
+          {(TRACKER_DATA as any)[values.tracker_type] && (
             <InputForm
               ref={formRef}
-              data={(TRACKER_DATA as any)[values.trackertype]}
+              data={(TRACKER_DATA as any)[values.tracker_type]}
             />
           )}
           <div className="flex gap-x-5">
             <Button
               type="submit"
-              className="w-full mt-8"
+              className="w-full mt-8 dark:bg-gray-400 dark:text-white"
               onClick={() => handleSubmit()}
             >
               create tracker
             </Button>
-            <Button
-              className="capitalize w-full mt-8"
-              onClick={() => getPreview()}
-              disabled={pl}
-            >
-              get Preview
-            </Button>
           </div>
         </div>
-        <div className="sticky top-0 flex justify-center w-full bg-white rounded-lg p-5 h-[75vh] ">
-          {pl ? <CodeBlock code={preview} /> : <CodeBlock isloading={pl} />}
+        <div className="sticky top-0 flex justify-center w-full bg-white dark:bg-gray-500 rounded-lg p-5 h-[75vh] ">
+          {newTracker ? (
+            <CodeBlock code={newTracker.data} language={newTracker.language} />
+          ) : (
+            <CodeBlock isloading={ctl} />
+          )}
         </div>
       </div>
     </div>

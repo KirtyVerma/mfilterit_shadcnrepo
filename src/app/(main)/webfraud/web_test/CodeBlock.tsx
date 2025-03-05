@@ -54,37 +54,41 @@ const CodeBlock = ({
 
   return (
     <>
-    <Card
-      className={`relative w-full max-w-3xl bg-[#1e1e1e] text-white border border-[#3c3c3c] rounded-lg overflow-auto ${!code && "overflow-hidden"} no- scrollbar`}
-    >
-      <CardContent className="relative p-4">
-        <div className=" sticky top-0 bg-[#1e1e1e] border-b-2 border-gray-700 flex justify-between items-center mb-2">
-          <span className="text-md text-gray-400 capitalize">{language}</span>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={copyToClipboard}>
-                  {!copy ? (
-                    <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
-                  ) : (
-                    <ClipboardCheck className="w-4 h-4 text-gray-400 hover:text-white" />
-                  )}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>{"Copy"}</TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-        <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300">
-          {formatCode(code ? code : dummyCode)}
-        </pre>
-      </CardContent>
-    </Card>
+      <Card
+        className={`relative w-full max-w-3xl bg-[#1e1e1e] text-white border border-[#3c3c3c] rounded-lg overflow-auto ${!code && "overflow-hidden"} no- scrollbar`}
+      >
+        <CardContent className="relative p-4">
+          <div className=" sticky top-0 bg-[#1e1e1e] border-b-2 border-gray-700 flex justify-between items-center mb-2">
+            <span className="text-md text-gray-400 capitalize">{language}</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" onClick={copyToClipboard}>
+                    {!copy ? (
+                      <Copy className="w-4 h-4 text-gray-400 hover:text-white" />
+                    ) : (
+                      <ClipboardCheck className="w-4 h-4 text-gray-400 hover:text-white" />
+                    )}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{"Copy"}</TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          {language === "url" ? (
+            <p>{code}</p>
+          ) : (
+            <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300">
+              {formatCode(code ? code : dummyCode)}
+            </pre>
+          )}
+        </CardContent>
+      </Card>
       {!code && (
-        <div className="absolute capitalize rounded-lg top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px]">
+        <div className="absolute capitalize rounded-lg top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px] text-primary">
           {isloading ? (
             <span>
-              <Loader2 className="w-10 h-10 text-gray-400 animate-spin text-primary" />
+              <Loader2 className="w-10 h-10 animate-spin text-primary" />
             </span>
           ) : (
             "Click to view Preview"

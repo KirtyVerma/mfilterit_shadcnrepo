@@ -2,12 +2,14 @@ import { toast, useToast } from "@/hooks/use-toast";
 import { useMutation, useQuery } from "react-query";
 import { PACKAGES, TRACKER } from "./DATA";
 import axios from "axios";
+import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 type ToastType = {
   description: string;
   title?: string;
   duration?: number;
 };
+
 class Toast {
   static default(data: ToastType) {
     const { title, description, duration } = data;
@@ -61,23 +63,51 @@ const dummyCode = `<script>
 const BASE_URL =
   "https://hu5lf9ft08.execute-api.ap-south-1.amazonaws.com/api/v1/";
 // "config_dashboard/customers"
+// queryClient.js
+
+export const queryClient = new QueryClient();
 
 const WEB_TEST_APIS = {
   async getPackages(): Promise<any> {
     const data: any = await axios.get(BASE_URL + "config_dashboard/customers");
     return data.data.customers;
   },
-  async getPackage({ queryKey }: any): Promise<any> {
+  async getTrackers({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
     const data: any = await axios.get(BASE_URL + "config_dashboard/trackers");
-    return data.data;
+    console.log("trigger fetch");
+    return data.data.data;
   },
-  getPreview(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve(dummyCode);
-      }, 2000);
-    });
+  async createTracker(payload: any): Promise<any> {
+    let data: any = await axios.post(
+      BASE_URL + "config_dashboard/trackers/create",
+      payload
+    );
+    Toast.success({ description: "tracker crated" });
+    data = data.data.data;
+    console.log(["trackers", payload["package_name"]]);
+    // queryClient.invalidateQueries({
+    //   queryKey: ["trackers", payload["package_name"]],
+    // });
+    if (data.tracker_url) {
+      return {
+        language: "url",
+        data: data.tracker_url,
+      };
+    }
+  },
+  async deleteTracker(payload: any): Promise<any> {
+    const { packageName, trackerId } = payload;
+    console.log(trackerId);
+    try {
+      await axios.delete(
+        BASE_URL + `config_dashboard/trackers/${trackerId}/delete`
+      );
+      Toast.success({ description: "tracker deleted" });
+    } catch (err) {
+      console.log(err);
+      Toast.error({ description: "Failed to delete tracker" });
+    }
   },
   async getPlatforms(): Promise<any> {
     const data: any = await axios.get(BASE_URL + "config_dashboard/platforms");
@@ -88,10 +118,10 @@ const WEB_TEST_APIS = {
 function useGetPackages() {
   return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
 }
-function useGetPackage(packageName: string | undefined) {
+function useGetTrackers(packageName: string | undefined) {
   return useQuery({
-    queryKey: ["package", packageName],
-    queryFn: WEB_TEST_APIS.getPackage,
+    queryKey: ["trackers", packageName],
+    queryFn: WEB_TEST_APIS.getTrackers,
   });
 }
 function useGetPlatforms() {
@@ -100,14 +130,27 @@ function useGetPlatforms() {
     queryFn: WEB_TEST_APIS.getPlatforms,
   });
 }
-function useGetPreview() {
+
+function useCreateTracker() {
   return useMutation({
-    mutationFn: WEB_TEST_APIS.getPreview,
-    // onSuccess: () => Toast.success({ description: "it works on success" }),
+    mutationFn: WEB_TEST_APIS.createTracker,
+    onSuccess: () => Toast.success({ description: "Tracker created" }),
+  });
+}
+function useDeleteTracker(onSuccess:any) {
+  return useMutation({
+    mutationFn: WEB_TEST_APIS.deleteTracker,
+    onSuccess:()=>onSuccess()
   });
 }
 
-export { useGetPreview, useGetPackages, useGetPackage, useGetPlatforms };
+export {
+  useGetPackages,
+  useGetTrackers,
+  useGetPlatforms,
+  useCreateTracker,
+  useDeleteTracker,
+};
 
 // function checkStatus(response: Response) {
 //   if (response.ok) {

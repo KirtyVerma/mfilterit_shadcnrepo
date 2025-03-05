@@ -69,9 +69,9 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
               key={key}
               className="flex items-center justify-between gap-x-5"
             >
-              <Label className="w-2/6">{key} :</Label>
+              <Label className="w-2/6 text-md dark:text-white capitalize">{key} :</Label>
               <Input
-                className="w-4/6"
+                className="w-4/6 dark:bg-gray-300 dark:text-white"
                 name={key}
                 placeholder="Enter value"
                 value={values[key] || ""}
@@ -88,14 +88,14 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
               key={key}
               className="flex items-center justify-between gap-x-5"
             >
-              <Label className="w-2/6">{key} :</Label>
+              <Label className="w-2/6 text-md dark:text-white capitalize">{key} :</Label>
               <Select
                 name={key}
                 onValueChange={(val) =>
                   setValues((prev) => ({ ...prev, [key]: val }))
                 }
               >
-                <SelectTrigger className="w-4/6 capitalize">
+                <SelectTrigger className="w-4/6 dark:bg-gray-300 dark:text-white capitalize">
                   <SelectValue placeholder={values[key]} />
                 </SelectTrigger>
                 <SelectContent>
@@ -117,7 +117,7 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
         if (field.type === "switch")
           return (
             <div key={key} className="flex items-center  gap-x-5">
-              <Label className="w-2/6">{key} :</Label>
+              <Label className="w-2/6 text-md dark:text-white capitalize">{key} :</Label>
               <Switch
                 name={key}
                 checked={values[key]}
