@@ -7,40 +7,68 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useDeleteTracker, useGetTrackers } from "../../api";
 import Loader from "../../Loader";
+import { CirclePlus, Cog, Trash2 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-function ActionButton({ packageName, trackerId,cb }: any) {
+function ActionButton({ packageName, trackerId, cb }: any) {
   const nav = useRouter();
-  const { mutate: deleteTracker, data, isLoading} = useDeleteTracker(cb);
+  const {
+    mutate: deleteTracker,
+    data,
+    isLoading,
+  } = useDeleteTracker(packageName);
   function onDelete() {
     deleteTracker({ packageName, trackerId });
   }
   return (
     <div className="flex gap-x-2">
-      <Button
-        onClick={() => nav.push(`/webfraud/web_test/trackers/${trackerId}`)}
-        className="bg-white dark:bg-gray-400 dark:text-white text-blue-500 hover:text-blue-600"
-      >
-        config
-      </Button>
-     
-        <Button
-          className="bg-white dark:bg-gray-400 dark:text-white ml-5 text-red-500 hover:text-red-600"
-          onClick={onDelete}
-        >
-          Delete {isLoading?<Loader className="!h-4 !w-4 ml-3"/>:null}
-        </Button>
-
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() =>
+                nav.push(`/webfraud/web_test/trackers/${trackerId}`)
+              }
+              className=" bg-transparent text-gray-400 dark:text-white hover:animate-spin"
+            >
+              <Cog />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="capitalize">{"configuration"}</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className=" bg-transparent text-gray-400  dark:text-white ml-5"
+              onClick={onDelete}
+            >
+              <Trash2 />{" "}
+              {isLoading ? <Loader className="!h-4 !w-4 ml-3" /> : null}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="capitalize">{"delete"}</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 }
 export default function ListTrackers() {
   const packageName: any = useParams()?.package_name;
-  const { data, isLoading ,refetch } = useGetTrackers(packageName);
+  const { data, isLoading, refetch } = useGetTrackers(packageName);
   const extrafields = [
     {
       title: "Actions",
       render: (item: any) => (
-        <ActionButton trackerId={item.tracker_id} packageName={packageName} cb={refetch}/>
+        <ActionButton
+          trackerId={item.tracker_id}
+          packageName={packageName}
+          cb={refetch}
+        />
       ),
     },
   ];
@@ -51,7 +79,7 @@ export default function ListTrackers() {
         <h2 className="text-xl font-medium text-gray-900 capitalize dark:text-white">
           Package Trackers
         </h2>
-        <div>
+        <div className="flex gap-x-4">
           <Link
             href={`${packageName}/analytics`}
             className="px-6 py-2 rounded-full capitalize text-white bg-purple-400 dark:bg-gray-400 hover:bg-purple-600"
@@ -60,9 +88,10 @@ export default function ListTrackers() {
           </Link>
           <Link
             href={`${packageName}/create_tracker`}
-            className="px-6 py-2 rounded-full capitalize text-white ml-9 bg-purple-400 dark:bg-gray-400 hover:bg-purple-600"
+            className="px-6 py-2 gap-x-3 flex rounded-full capitalize text-white bg-purple-400 dark:bg-gray-400 hover:bg-purple-600"
           >
-            create tracker
+            <CirclePlus />
+            Create tracker
           </Link>
         </div>
       </div>

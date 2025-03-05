@@ -31,8 +31,7 @@ type Props = {
 
 const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
   const [values, setValues] = useState<Record<string, any>>({});
-
-  useEffect(() => {
+  const reset = () =>
     setValues(() =>
       Object.keys(data).reduce(
         (acc, key: any) => {
@@ -49,13 +48,14 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
         {} as Record<string, any>
       )
     );
-  }, [data]);
+  useEffect(() => {reset()}, [data]);
 
   function handleSubmit() {
     return values;
   }
   useImperativeHandle(ref, () => ({
     values: handleSubmit,
+    reset:reset
   }));
 
   return (
@@ -69,7 +69,9 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
               key={key}
               className="flex items-center justify-between gap-x-5"
             >
-              <Label className="w-2/6 text-md dark:text-white capitalize">{key} :</Label>
+              <Label className="w-2/6 text-md dark:text-white capitalize">
+                {key} :
+              </Label>
               <Input
                 className="w-4/6 dark:bg-gray-300 dark:text-white"
                 name={key}
@@ -88,7 +90,9 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
               key={key}
               className="flex items-center justify-between gap-x-5"
             >
-              <Label className="w-2/6 text-md dark:text-white capitalize">{key} :</Label>
+              <Label className="w-2/6 text-md dark:text-white capitalize">
+                {key} :
+              </Label>
               <Select
                 name={key}
                 onValueChange={(val) =>
@@ -117,7 +121,9 @@ const DynamicInputForm = forwardRef(({ data }: Props, ref: any) => {
         if (field.type === "switch")
           return (
             <div key={key} className="flex items-center  gap-x-5">
-              <Label className="w-2/6 text-md dark:text-white capitalize">{key} :</Label>
+              <Label className="w-2/6 text-md dark:text-white capitalize">
+                {key} :
+              </Label>
               <Switch
                 name={key}
                 checked={values[key]}

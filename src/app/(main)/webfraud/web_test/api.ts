@@ -1,8 +1,8 @@
 import { toast, useToast } from "@/hooks/use-toast";
-import { useMutation, useQuery } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { PACKAGES, TRACKER } from "./DATA";
 import axios from "axios";
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
+
 
 type ToastType = {
   description: string;
@@ -65,7 +65,7 @@ const BASE_URL =
 // "config_dashboard/customers"
 // queryClient.js
 
-export const queryClient = new QueryClient();
+// export const queryClient = new QueryClient();
 
 const WEB_TEST_APIS = {
   async getPackages(): Promise<any> {
@@ -137,10 +137,11 @@ function useCreateTracker() {
     onSuccess: () => Toast.success({ description: "Tracker created" }),
   });
 }
-function useDeleteTracker(onSuccess:any) {
+function useDeleteTracker(packageName:any) {
+  const q = useQueryClient()
   return useMutation({
     mutationFn: WEB_TEST_APIS.deleteTracker,
-    onSuccess:()=>onSuccess()
+    onSuccess:()=>{q.invalidateQueries({queryKey:["trackers",packageName]})}
   });
 }
 

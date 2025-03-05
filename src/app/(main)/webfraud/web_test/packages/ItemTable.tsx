@@ -50,7 +50,7 @@ export default function ItemTable({
                 key={field}
                 className="capitalize text-center w-[200px] py-3 px-4 tex-left text-sm font-medium text-gray-600"
               >
-                {field}
+                {field.replace("_"," ")}
               </TableHead>
             ))}
             {extraFields

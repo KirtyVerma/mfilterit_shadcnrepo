@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateTracker, useGetPlatforms, useGetPreview } from "../../../api";
+import { useCreateTracker, useGetPlatforms } from "../../../api";
 import { Button } from "@/components/ui/button";
 import Loader from "../../../Loader";
 
