@@ -1,12 +1,16 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CodeBlock from "../../CodeBlock";
 import InputForm from "../../Form";
+import DDF from "./DDF";
+import TEMP from "./temp";
+import { Button } from "@/components/ui/button";
 
 export default function TrackerConfig() {
   const packageName = useParams().package_name;
+  const [state, setstate] = useState<any>();
   const DATA: any = {
     tracker_type: {
       type: "dropdown",
@@ -20,11 +24,18 @@ export default function TrackerConfig() {
     },
   };
 
+  const formRef: any = useRef();
   // Dummy code to display on the right side
-  function handleSubmit(values: any) {
-    console.log("Trackers Configuration Form Data:", values);
+  function handleSubmit() {
+    const formData = formRef?.current?.values();
+    setstate((prev:any )=> ({ ...prev, formData }));
   }
 
+  useEffect(() => {
+    
+    console.log("-=========>>",state);
+
+  }, [state]);
 
   return (
     <div className="relative h-full py-2 px-8">
@@ -35,11 +46,13 @@ export default function TrackerConfig() {
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
         <div className=" bg-white dark:bg-gray-500 rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
-          <InputForm data={DATA} />
+          {/* <InputForm data={DATA} /> */}
+          <DDF data={TEMP["schema"]} label="config" ref={formRef} />
+          <Button onClick={handleSubmit}>submit</Button>
         </div>
 
         <div className="sticky top-0 flex justify-center border-box w-full bg-white dark:bg-gray-500 rounded-lg p-5 h-[75vh] ">
-          <CodeBlock code = "fdkjfhdhj"/>
+          <CodeBlock code="fdkjfhdhj" />
         </div>
       </div>
     </div>

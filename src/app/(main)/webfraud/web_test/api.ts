@@ -70,7 +70,7 @@ const BASE_URL =
 const WEB_TEST_APIS = {
   async getPackages(): Promise<any> {
     const data: any = await axios.get(BASE_URL + "config_dashboard/customers");
-    return data.data.customers;
+    return data.data.data;
   },
   async getTrackers({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
