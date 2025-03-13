@@ -187,4 +187,4 @@ const TEMP = {
   },
 };
 
-export default TEMP
+export default TEMP;

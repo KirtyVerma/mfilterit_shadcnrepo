@@ -28,12 +28,13 @@ export default function TrackerConfig() {
   // Dummy code to display on the right side
   function handleSubmit() {
     const formData = formRef?.current?.values();
+    console.log("===>",formData)
     setstate((prev:any )=> ({ ...prev, formData }));
   }
 
   useEffect(() => {
     
-    console.log("-=========>>",state);
+    console.log(state);
 
   }, [state]);
 
@@ -47,7 +48,7 @@ export default function TrackerConfig() {
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
         <div className=" bg-white dark:bg-gray-500 rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
           {/* <InputForm data={DATA} /> */}
-          <DDF data={TEMP["schema"]} label="config" ref={formRef} />
+          <DDF data={TEMP["schema"]} label="config" ref={formRef} flag={true}/>
           <Button onClick={handleSubmit}>submit</Button>
         </div>
 
