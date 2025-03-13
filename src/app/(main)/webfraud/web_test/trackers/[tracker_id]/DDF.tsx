@@ -18,70 +18,34 @@ import React, {
 } from "react";
 
 const DDF = React.memo(
-  forwardRef(({ data, label, p = {}, cb }: any, ref: any) => {
-    if (!data) return;
-    // whenever change occures trigger a call back
-
+  forwardRef(({ data, label, formValues = {}, cb }: any, ref: any) => {
+    // if (!data) return;
     const isDropdown = Object.values(data).every(
       (value) =>
         typeof value === "object" && !Array.isArray(value) && value !== null
     );
 
-    const [values, setValues] = useState<Record<string, any>>({ ...p[label] });
-    const formRef: any = useRef();
+    const [values, setValues] = useState<Record<string, any>>({
+      ...formValues[label],
+    });
 
-    function getValues() {
-      const formData = formRef?.current?.values();
-      if (isDropdown) {
-        console.log(
-          label,
-          "drop down values ====>",
-          label,
-          values[label],
-          values
-        );
-        return { [label]: values };
-      }
-      return { ...values, ...formData };
-    }
-
-    // function saveCurrentValues(val: any) {
-    //   setValues((prev) => ({ ...prev, [values[label]]: val }));
-    // }
     const saveCurrentValues = useCallback(
-      (val: any) => {
-        setValues((prev) => ({ ...prev, [values[label]]: val }));
-      },
-      [values, label]
-    );
-    // function savePreviousValues(val: any) {
-    //   setValues((prev) => {
-    //     let result: any = { ...prev, [label]: val };
-    //     const formData = formRef?.current?.values();
-    //     if (prev[label] && formData) result[prev[label]] = formData;
-    //     return result;
-    //   })
-    // }
-    const savePreviousValues = useCallback(
-      (val: any) => {
+      (val: any, subLabel: any) => {
+        subLabel && console.log(label, subLabel, values[label], values);
         setValues((prev) => {
-          let result: any = { ...prev, [label]: val };
-          const formData = formRef?.current?.values();
-          if (prev[label] && formData) result[prev[label]] = formData;
-          return result;
+          return { ...prev, [subLabel ? subLabel : values[label]]: val };
         });
       },
       [values, label]
     );
 
-    useImperativeHandle(ref, () => ({
-      values: getValues,
-    }));
-
     useEffect(() => {
-      console.log("trigger save");
-      cb && cb(values);
+      cb && cb(values, isDropdown ? label : null);
     }, [values]);
+
+    useImperativeHandle(ref, () => ({
+      values: values,
+    }));
 
     if (isDropdown) {
       return (
@@ -90,7 +54,12 @@ const DDF = React.memo(
             <Label className="w-2/6 text-md dark:text-white capitalize">
               {label} :
             </Label>
-            <Select value={values[label]} onValueChange={savePreviousValues}>
+            <Select
+              value={values[label]}
+              onValueChange={(val) =>
+                setValues((prev) => ({ ...prev, [label]: val }))
+              }
+            >
               <SelectTrigger className="w-4/6 dark:bg-gray-300 dark:text-white capitalize">
                 <SelectValue placeholder="select value...." />
               </SelectTrigger>
@@ -103,18 +72,17 @@ const DDF = React.memo(
               </SelectContent>
             </Select>
           </div>
-          <DDF
-            data={data[values[label]]}
-            p={values}
-            label={values[label]}
-            ref={formRef}
-            cb={saveCurrentValues}
-          />
+          {values[label] && (
+            <DDF
+              data={data[values[label]]}
+              formValues={values}
+              label={values[label]}
+              cb={saveCurrentValues}
+            />
+          )}
         </div>
       );
-    }
-    // else return
-    else {
+    } else {
       return (
         <>
           {Object.keys(data).map((key: string) => {
@@ -135,7 +103,7 @@ const DDF = React.memo(
                     value={values[key] || ""}
                     onChange={(e) =>
                       setValues((prev) => ({
-                        ...values,
+                        ...prev,
                         [key]: e.target.value,
                       }))
                     }
@@ -155,7 +123,7 @@ const DDF = React.memo(
                   <Select
                     name={key}
                     onValueChange={(val) =>
-                      setValues((prev) => ({ ...values, [key]: val }))
+                      setValues((prev) => ({ ...prev, [key]: val }))
                     }
                   >
                     <SelectTrigger className="w-4/6 dark:bg-gray-300 dark:text-white capitalize">
@@ -182,8 +150,8 @@ const DDF = React.memo(
                   key={label}
                   data={field}
                   label={key}
-                  p={values}
-                  ref={formRef}
+                  formValues={values}
+                  cb={saveCurrentValues}
                 />
               );
 
