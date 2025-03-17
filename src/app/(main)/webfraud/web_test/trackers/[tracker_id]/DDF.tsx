@@ -25,6 +25,7 @@ const DDF = React.memo(
         typeof value === "object" && !Array.isArray(value) && value !== null
     );
 
+    const [dropdown, setdropdown] = useState(undefined)
     const [values, setValues] = useState<Record<string, any>>({
       ...formValues[label],
     });
@@ -45,6 +46,10 @@ const DDF = React.memo(
 
     useImperativeHandle(ref, () => ({
       values: values,
+      reset:()=>{
+        console.log("object")
+        setValues({})
+      }
     }));
 
     if (isDropdown) {
