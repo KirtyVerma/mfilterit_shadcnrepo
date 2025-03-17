@@ -3,7 +3,6 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import { PACKAGES, TRACKER } from "./DATA";
 import axios from "axios";
 
-
 type ToastType = {
   description: string;
   title?: string;
@@ -78,6 +77,10 @@ const WEB_TEST_APIS = {
     console.log("trigger fetch");
     return data.data.data;
   },
+  async getPlatforms(): Promise<any> {
+    const data: any = await axios.get(BASE_URL + "config_dashboard/platforms");
+    return data.data.data;
+  },
   async createTracker(payload: any): Promise<any> {
     let data: any = await axios.post(
       BASE_URL + "config_dashboard/trackers/create",
@@ -109,8 +112,11 @@ const WEB_TEST_APIS = {
       Toast.error({ description: "Failed to delete tracker" });
     }
   },
-  async getPlatforms(): Promise<any> {
-    const data: any = await axios.get(BASE_URL + "config_dashboard/platforms");
+  async getTrackerConfig({ queryKey }: any): Promise<any> {
+    const [_key, trackerId] = queryKey;
+    const data: any = await axios.get(
+      BASE_URL + `config_dashboard/trackers/${trackerId}/get_config`
+    );
     return data.data.data;
   },
 };
@@ -118,16 +124,23 @@ const WEB_TEST_APIS = {
 function useGetPackages() {
   return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
 }
+function useGetPlatforms() {
+  return useQuery({
+    queryKey: "platforms",
+    queryFn: WEB_TEST_APIS.getPlatforms,
+  });
+}
 function useGetTrackers(packageName: string | undefined) {
   return useQuery({
     queryKey: ["trackers", packageName],
     queryFn: WEB_TEST_APIS.getTrackers,
   });
 }
-function useGetPlatforms() {
+
+function useGetTrackerConfig(trackerId: string) {
   return useQuery({
-    queryKey: "platforms",
-    queryFn: WEB_TEST_APIS.getPlatforms,
+    queryKey: ["tracker_config", trackerId],
+    queryFn: WEB_TEST_APIS.getTrackerConfig,
   });
 }
 
@@ -137,11 +150,13 @@ function useCreateTracker() {
     onSuccess: () => Toast.success({ description: "Tracker created" }),
   });
 }
-function useDeleteTracker(packageName:any) {
-  const q = useQueryClient()
+function useDeleteTracker(packageName: any) {
+  const q = useQueryClient();
   return useMutation({
     mutationFn: WEB_TEST_APIS.deleteTracker,
-    onSuccess:()=>{q.invalidateQueries({queryKey:["trackers",packageName]})}
+    onSuccess: () => {
+      q.invalidateQueries({ queryKey: ["trackers", packageName] });
+    },
   });
 }
 
@@ -150,6 +165,7 @@ export {
   useGetTrackers,
   useGetPlatforms,
   useCreateTracker,
+  useGetTrackerConfig,
   useDeleteTracker,
 };
 

@@ -7,25 +7,24 @@ import InputForm from "../../Form";
 import DDF from "./DDF";
 import TEMP from "./temp";
 import { Button } from "@/components/ui/button";
+import { useGetTrackerConfig } from "../../api";
+import Loader from "../../Loader";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export default function TrackerConfig() {
-  const packageName = useParams().package_name;
-  const [state, setstate] = useState<any>();
+  const trackerId: any = useParams().tracker_id;
+  const tracker_name: any = useParams().tracker_name;
+  const { data, isLoading } = useGetTrackerConfig(trackerId);
 
   const formRef: any = useRef();
   // Dummy code to display on the right side
   function handleSubmit() {
     const formData = formRef?.current?.values;
     console.log("===>", formData);
-    setstate((prev: any) => ({ ...prev, formData }));
   }
 
-  const [t, sett] = useState();
-
-  useEffect(() => {
-    console.log(t);
-  }, [t]);
-
+  console.log(data);
   return (
     <div className="relative h-full py-2 px-8">
       <div className="px-8 py-5 bg-white dark:bg-gray-500 rounded-xl flex items-center justify-between">
@@ -33,14 +32,38 @@ export default function TrackerConfig() {
           Trackers Configuration
         </h2>
       </div>
-      <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
-        <div className="relative bg-white dark:bg-gray-500 rounded-lg p-5 flex flex-col gap-y-8  w-full">
-          {/* <InputForm data={DATA} /> */}
-          <DDF data={TEMP["schema"]} label="config" ref={formRef} />
-          <div className=" p-3 rounded-xl flex justify-end gap-x-4">
-            <Button className="w-1/5" onClick={formRef?.current?.reset}>Reset</Button>
-            <Button className="w-1/5" onClick={handleSubmit}>submit</Button>
+      <div className="flex flex-col lg:flex-row gap-y-4 py-2 lg:gap-x-4  rounded-xl mt-3 w-full">
+        <div className="relative bg-white dark:bg-gray-500 rounded-lg p-5 flex flex-col gap-y-4  w-full">
+          <div className="flex items-center justify-between gap-x-5">
+            <Label className="w-2/6 text-md dark:text-white capitalize">
+              Tracker id :
+            </Label>
+            <Input
+              className="w-4/6 dark:bg-gray-300 dark:text-white"
+              value={trackerId}
+              disabled
+            />
           </div>
+          {data ? (
+            <div>
+              <DDF
+                schema={data["schema"]}
+                defaultValues={data["config"]}
+                label="config"
+                ref={formRef}
+              />
+              <div className="mt-4 p-3 rounded-xl flex justify-end gap-x-4">
+                <Button className="w-1/5" onClick={formRef?.current?.reset}>
+                  Reset
+                </Button>
+                <Button className="w-1/5" onClick={handleSubmit}>
+                  submit
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Loader />
+          )}
         </div>
 
         <div className="sticky top-0 flex justify-center border-box bg-white dark:bg-gray-500 rounded-lg p-5 h-[75vh] lg:w-4/5">
