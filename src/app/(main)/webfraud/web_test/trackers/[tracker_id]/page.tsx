@@ -38,11 +38,11 @@ export default function TrackerConfig() {
       <div className="flex flex-col lg:flex-row gap-y-4 py-2 lg:gap-x-4  rounded-xl mt-3 w-full">
         <div className="relative bg-white dark:bg-gray-500 rounded-lg p-5 flex flex-col gap-y-4  w-full">
           <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6 text-md dark:text-white capitalize">
+            <Label className="w-4/6 text-md dark:text-white capitalize">
               Tracker id :
             </Label>
             <Input
-              className="w-4/6 dark:bg-gray-300 dark:text-white"
+              className="w-full dark:bg-gray-300 dark:text-white"
               value={trackerId}
               disabled
             />
