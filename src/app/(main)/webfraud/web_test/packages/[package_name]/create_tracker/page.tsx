@@ -3,7 +3,6 @@
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import CodeBlock from "../../../CodeBlock";
-import InputForm from "../../../Form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import TRACKER_DATA from "./create_tracker";
@@ -17,6 +16,7 @@ import {
 import { useCreateTracker, useGetPlatforms } from "../../../api";
 import { Button } from "@/components/ui/button";
 import Loader from "../../../Loader";
+import DynamicInputForm from "../../../DynamicInputForm";
 
 export default function CreateTracker() {
   const packageName = useParams().package_name;
@@ -138,13 +138,8 @@ export default function CreateTracker() {
                 )}
               </SelectContent>
             </Select>
+            {/* <DDF schema={TRACKER_DATA} label="ff"/> */}
           </div>
-          {(TRACKER_DATA as any)[values.tracker_type] && (
-            <InputForm
-              ref={formRef}
-              data={(TRACKER_DATA as any)[values.tracker_type]}
-            />
-          )}
           <div className="flex gap-x-5">
             <Button
               type="submit"

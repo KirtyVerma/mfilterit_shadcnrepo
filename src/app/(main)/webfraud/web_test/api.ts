@@ -74,7 +74,6 @@ const WEB_TEST_APIS = {
   async getTrackers({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
     const data: any = await axios.get(BASE_URL + "config_dashboard/trackers");
-    console.log("trigger fetch");
     return data.data.data;
   },
   async getPlatforms(): Promise<any> {
@@ -86,7 +85,6 @@ const WEB_TEST_APIS = {
       BASE_URL + "config_dashboard/trackers/create",
       payload
     );
-    Toast.success({ description: "tracker crated" });
     data = data.data.data;
     console.log(["trackers", payload["package_name"]]);
     // queryClient.invalidateQueries({
@@ -119,6 +117,15 @@ const WEB_TEST_APIS = {
     );
     return data.data.data;
   },
+  async updateTrackerConfig(payload: any): Promise<any> {
+    const { trackerId, data:updatedConfig }: any = payload;
+    let data: any = await axios.patch(
+      BASE_URL + `config_dashboard/trackers/${trackerId}/set_config`,
+      updatedConfig
+    );
+    data = data.data.data;
+    return data;
+  },
 };
 
 function useGetPackages() {
@@ -150,6 +157,13 @@ function useCreateTracker() {
     onSuccess: () => Toast.success({ description: "Tracker created" }),
   });
 }
+function useUpdateTrackerConfig() {
+  return useMutation({
+    mutationFn: WEB_TEST_APIS.updateTrackerConfig,
+    onSuccess: () => Toast.success({ description: "Tracker updated" }),
+    onError: () => Toast.error({ description: " failed updating Tracker" }),
+  });
+}
 function useDeleteTracker(packageName: any) {
   const q = useQueryClient();
   return useMutation({
@@ -164,8 +178,9 @@ export {
   useGetPackages,
   useGetTrackers,
   useGetPlatforms,
-  useCreateTracker,
   useGetTrackerConfig,
+  useCreateTracker,
+  useUpdateTrackerConfig,
   useDeleteTracker,
 };
 

@@ -3,11 +3,10 @@
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 import CodeBlock from "../../CodeBlock";
-import InputForm from "../../Form";
-import DDF from "./DDF";
+import DynamicInputForm from "../../DynamicInputForm";
 import TEMP from "./temp";
 import { Button } from "@/components/ui/button";
-import { useGetTrackerConfig } from "../../api";
+import { useGetTrackerConfig, useUpdateTrackerConfig } from "../../api";
 import Loader from "../../Loader";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -15,16 +14,17 @@ import { Input } from "@/components/ui/input";
 export default function TrackerConfig() {
   const trackerId: any = useParams().tracker_id;
   const tracker_name: any = useParams().tracker_name;
-  const { data, isLoading } = useGetTrackerConfig(trackerId);
-
+  const { data: trackerFields, isLoading } = useGetTrackerConfig(trackerId);
+  const { mutate, data: updateRes } = useUpdateTrackerConfig();
   const formRef: any = useRef();
   // Dummy code to display on the right side
   function handleSubmit() {
     const formData = formRef?.current?.values;
-    console.log("===>", formData);
+    const payload = { trackerId: trackerId, data: formData };
+    console.log(formData)
+    mutate(payload);
   }
 
-  console.log(data);
   return (
     <div className="relative h-full py-2 px-8">
       <div className="px-8 py-5 bg-white dark:bg-gray-500 rounded-xl flex items-center justify-between">
@@ -44,11 +44,11 @@ export default function TrackerConfig() {
               disabled
             />
           </div>
-          {data ? (
+          {trackerFields ? (
             <div>
-              <DDF
-                schema={data["schema"]}
-                defaultValues={data["config"]}
+              <DynamicInputForm
+                schema={trackerFields["schema"]}
+                defaultValues={trackerFields["config"]}
                 label="config"
                 ref={formRef}
               />

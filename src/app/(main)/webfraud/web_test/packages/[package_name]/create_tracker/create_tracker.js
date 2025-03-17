@@ -7,7 +7,7 @@ const CREATE_TRACKER_FIELDS = {
     //   values: ["Value1", "Value2", "Value3"],
     // },
     // impresssionthreashold: {
-    //   type: "input",
+    //   type: "input", 
     //   values: "exampleValue",
     // },
   },

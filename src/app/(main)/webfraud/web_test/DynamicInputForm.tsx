@@ -13,14 +13,21 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
-  useRef,
   useState,
 } from "react";
 
-const DDF = React.memo(
+type Props = {
+  schema: Record<string, any>;
+  label: string;
+  defaultValues?: Record<string, any>;
+  formValues?: Record<string, any>;
+  cb?: Function;
+};
+
+const DynamicInputForm = React.memo(
   forwardRef(
     (
-      { schema, defaultValues = {}, label, formValues = {}, cb }: any,
+      { schema, defaultValues = {}, label, formValues = {}, cb }: Props,
       ref: any
     ) => {
       const isDropdown = Object.values(schema).every(
@@ -29,8 +36,8 @@ const DDF = React.memo(
       );
       const [dropdown, setdropdown] = useState<Record<string, any>>({});
       const [values, setValues] = useState<Record<string, any>>({
-        ...formValues[label],
         ...defaultValues,
+        ...formValues[label],
       });
       const fieldType = (type: string) => {
         if (type === "str") return "text";
@@ -51,11 +58,12 @@ const DDF = React.memo(
         cb && cb(values, isDropdown ? label : null);
       }, [values]);
 
+
       useImperativeHandle(ref, () => ({
         values: values,
         reset: () => {
           console.log("object");
-          setValues({});
+          setValues({...defaultValues});
         },
       }));
 
@@ -85,7 +93,7 @@ const DDF = React.memo(
               </Select>
             </div>
             {dropdown?.[label] && (
-              <DDF
+              <DynamicInputForm
                 schema={schema[dropdown[label]]}
                 formValues={values}
                 label={dropdown[label]}
@@ -115,7 +123,7 @@ const DDF = React.memo(
                     />
                   </div>
                 );
-              if (field === "str")
+              if (typeof field === "string")
                 return (
                   <div
                     key={key}
@@ -179,7 +187,7 @@ const DDF = React.memo(
                 dropdown
               )
                 return (
-                  <DDF
+                  <DynamicInputForm
                     key={label}
                     schema={field}
                     label={key}
@@ -217,4 +225,4 @@ const DDF = React.memo(
     return JSON.stringify(prevProps) === JSON.stringify(nextProps);
   }
 );
-export default DDF;
+export default DynamicInputForm;
