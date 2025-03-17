@@ -64,6 +64,7 @@ const DynamicInputForm = React.memo(
         reset: () => {
           console.log("object");
           setValues({...defaultValues});
+          setdropdown({});
         },
       }));
 

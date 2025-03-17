@@ -21,8 +21,11 @@ export default function TrackerConfig() {
   function handleSubmit() {
     const formData = formRef?.current?.values;
     const payload = { trackerId: trackerId, data: formData };
-    console.log(formData)
+    console.log(formData);
     mutate(payload);
+  }
+  function resetForm() {
+    formRef?.current?.reset();
   }
 
   return (
@@ -53,7 +56,7 @@ export default function TrackerConfig() {
                 ref={formRef}
               />
               <div className="mt-4 p-3 rounded-xl flex justify-end gap-x-4">
-                <Button className="w-1/5" onClick={formRef?.current?.reset}>
+                <Button className="w-1/5" onClick={resetForm}>
                   Reset
                 </Button>
                 <Button className="w-1/5" onClick={handleSubmit}>
