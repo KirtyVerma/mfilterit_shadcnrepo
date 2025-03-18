@@ -73,7 +73,7 @@ const WEB_TEST_APIS = {
   },
   async getTrackers({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
-    const data: any = await axios.get(BASE_URL + "config_dashboard/trackers");
+    const data: any = await axios.get(BASE_URL + `config_dashboard/trackers?package_name=${packageName}`);
     return data.data.data;
   },
   async getPlatforms(): Promise<any> {

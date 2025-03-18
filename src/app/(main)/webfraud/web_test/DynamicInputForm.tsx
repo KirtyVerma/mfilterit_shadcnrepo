@@ -164,12 +164,13 @@ const DynamicInputForm = React.memo(
                     </Label>
                     <Select
                       name={key}
+                      value={values[key]}
                       onValueChange={(val) =>
                         setValues((prev) => ({ ...prev, [key]: val }))
                       }
                     >
                       <SelectTrigger className="w-full dark:bg-gray-300 dark:text-white capitalize">
-                        <SelectValue placeholder={field[0]} />
+                        <SelectValue placeholder="enter value" />
                       </SelectTrigger>
                       <SelectContent>
                         {field?.map((item: string) => (

@@ -15,14 +15,14 @@ export default function TrackerConfig() {
   const trackerId: any = useParams().tracker_id;
   const tracker_name: any = useParams().tracker_name;
   const { data: trackerFields, isLoading } = useGetTrackerConfig(trackerId);
-  const { mutate, data: updateRes } = useUpdateTrackerConfig();
+  const { mutateAsync, data: updateRes } = useUpdateTrackerConfig();
   const formRef: any = useRef();
   // Dummy code to display on the right side
   function handleSubmit() {
     const formData = formRef?.current?.values;
     const payload = { trackerId: trackerId, data: formData };
     console.log(formData);
-    mutate(payload);
+    mutateAsync(payload).then(()=>resetForm());
   }
   function resetForm() {
     formRef?.current?.reset();
