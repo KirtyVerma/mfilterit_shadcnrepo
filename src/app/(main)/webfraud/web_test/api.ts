@@ -9,7 +9,7 @@ type ToastType = {
   duration?: number;
 };
 
-class Toast {
+export class Toast {
   static default(data: ToastType) {
     const { title, description, duration } = data;
     toast({
@@ -155,6 +155,7 @@ function useCreateTracker() {
   return useMutation({
     mutationFn: WEB_TEST_APIS.createTracker,
     onSuccess: () => Toast.success({ description: "Tracker created" }),
+    onError: () => Toast.error({ description: " failed creating Tracker" }),
   });
 }
 function useUpdateTrackerConfig() {

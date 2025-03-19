@@ -15,48 +15,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-function ActionButton({ packageName, trackerId, cb }: any) {
-  const nav = useRouter();
-  const {
-    mutate: deleteTracker,
-    data,
-    isLoading,
-  } = useDeleteTracker(packageName);
-  function onDelete() {
-    deleteTracker({ packageName, trackerId });
-  }
-  return (
-    <div className="flex gap-x-2">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={() =>
-                nav.push(`/webfraud/web_test/trackers/${trackerId}`)
-              }
-              className=" bg-transparent text-gray-400 dark:text-white hover:animate-spin"
-            >
-              <Cog />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="capitalize">{"configuration"}</TooltipContent>
-        </Tooltip>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              className=" bg-transparent text-gray-400  dark:text-white ml-5"
-              onClick={onDelete}
-            >
-              <Trash2 />{" "}
-              {isLoading ? <Loader className="!h-4 !w-4 ml-3" /> : null}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent className="capitalize">{"delete"}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
-  );
-}
 export default function ListTrackers() {
   const packageName: any = useParams()?.package_name;
   const { data, isLoading, refetch } = useGetTrackers(packageName);
@@ -82,13 +40,13 @@ export default function ListTrackers() {
         <div className="flex gap-x-4">
           <Link
             href={`${packageName}/analytics`}
-            className="px-6 py-2 rounded-full capitalize text-white bg-purple-400 dark:bg-gray-400 hover:bg-purple-600"
+            className="px-6 py-2 rounded-full capitalize text-white bg-purple-500 dark:bg-gray-400 hover:bg-purple-600"
           >
             analytics
           </Link>
           <Link
             href={`${packageName}/create_tracker`}
-            className="px-6 py-2 gap-x-3 flex rounded-full capitalize text-white bg-purple-400 dark:bg-gray-400 hover:bg-purple-600"
+            className="px-6 py-2 gap-x-3 flex rounded-full capitalize text-white bg-purple-500 dark:bg-gray-400 hover:bg-purple-600"
           >
             <CirclePlus />
             Create tracker
@@ -110,5 +68,50 @@ export default function ListTrackers() {
         )}
       </div>
     </div>
+  );
+}
+
+function ActionButton({ packageName, trackerId, cb }: any) {
+  const nav = useRouter();
+  const {
+    mutate: deleteTracker,
+    data,
+    isLoading,
+  } = useDeleteTracker(packageName);
+  function onDelete() {
+    deleteTracker({ packageName, trackerId });
+  }
+  return (
+    <TooltipProvider delayDuration={100}>
+      <div className="flex gap-x-2 items-center justify-around">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={() =>
+                nav.push(`/webfraud/web_test/trackers/${trackerId}`)
+              }
+              className="p-0 bg-transparent text-gray-400 dark:text-white "
+            >
+              <Cog className="hover:animate-spin" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="capitalize">
+            {"configuration"}
+          </TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              className="p-0 bg-transparent text-gray-400  dark:text-white ml-5"
+              onClick={onDelete}
+            >
+              <Trash2 className="hover:text-red-600 hover:animate-in" />
+              {isLoading ? <Loader className="!h-4 !w-4 ml-3" /> : null}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent className="capitalize">{"delete"}</TooltipContent>
+        </Tooltip>
+      </div>
+    </TooltipProvider>
   );
 }

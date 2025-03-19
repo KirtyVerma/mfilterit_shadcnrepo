@@ -85,13 +85,13 @@ const CodeBlock = ({
         </CardContent>
       </Card>
       {!code && (
-        <div className="absolute capitalize rounded-lg top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px] text-primary">
+        <div className="absolute capitalize rounded-lg top-0 h-full w-full flex justify-center items-center bg-white/10 backdrop-blur-[2px] text-white">
           {isloading ? (
             <span>
               <Loader2 className="w-10 h-10 animate-spin text-primary" />
             </span>
           ) : (
-            "Click to view Preview"
+            "Create Tracker to get preview"
           )}
         </div>
       )}
@@ -101,7 +101,7 @@ const CodeBlock = ({
 
 export default CodeBlock;
 
-const formatCode = (unstructuredCode) => {
+const formatCode = (unstructuredCode:string) => {
   return unstructuredCode
     .replace(/(\{|\})/g, "\n$1\n") // Add new lines around braces
     .replace(/;/g, ";\n") // New line after semicolons

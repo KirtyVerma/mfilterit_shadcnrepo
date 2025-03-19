@@ -38,7 +38,8 @@ export default function CreateTracker() {
     platforms && setValues((prev) => ({ ...prev, ["platform"]: platforms[0] }));
   }, [platforms]);
 
-  function handleSubmit() {
+  function handleSubmit(event: any) {
+    event.preventDefault();
     const formData = formRef?.current?.values();
     const fields = { ...values, ...formData };
     createTracker(fields);
@@ -52,7 +53,10 @@ export default function CreateTracker() {
         </h2>
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
-        <div className=" bg-white dark:bg-gray-500 dark:text-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5">
+        <form
+          onSubmit={handleSubmit}
+          className=" bg-white dark:bg-gray-500 dark:text-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5"
+        >
           <div className="flex items-center justify-between gap-x-5">
             <Label className="w-2/6 capitalize text-md">package_name :</Label>
             <Input
@@ -68,6 +72,7 @@ export default function CreateTracker() {
               className="w-4/6 dark:bg-gray-300 outline-none dark:border-white"
               placeholder="Enter value"
               value={values["tracker_name"]}
+              required
               onChange={(e) =>
                 setValues((prev) => ({ ...prev, tracker_name: e.target.value }))
               }
@@ -75,7 +80,6 @@ export default function CreateTracker() {
           </div>
           <div className="flex items-center justify-between gap-x-5">
             <Label className="w-2/6 capitalize text-md">platforms :</Label>
-            {/* {platforms ? ( */}
             <Select
               onValueChange={(val) =>
                 setValues((prev) => ({ ...prev, platform: val }))
@@ -144,12 +148,11 @@ export default function CreateTracker() {
             <Button
               type="submit"
               className="w-full mt-8 dark:bg-gray-400 dark:text-white"
-              onClick={() => handleSubmit()}
             >
               create tracker
             </Button>
           </div>
-        </div>
+        </form>
         <div className="sticky top-0 flex justify-center w-full bg-white dark:bg-gray-500 rounded-lg p-5 h-[75vh] ">
           {newTracker ? (
             <CodeBlock code={newTracker.data} language={newTracker.language} />
