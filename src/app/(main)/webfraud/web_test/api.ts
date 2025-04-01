@@ -1,5 +1,5 @@
 import { toast, useToast } from "@/hooks/use-toast";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import {useMutation,useQuery,useQueryClient} from "react-query"
 import { PACKAGES, TRACKER } from "./DATA";
 import axios from "axios";
 
@@ -76,8 +76,10 @@ const WEB_TEST_APIS = {
     const data: any = await axios.get(BASE_URL + `config_dashboard/trackers?package_name=${packageName}`);
     return data.data.data;
   },
-  async getPlatforms(): Promise<any> {
-    const data: any = await axios.get(BASE_URL + "config_dashboard/platforms");
+  async getNewTrackerSchema(): Promise<any> {
+    const data: any = await axios.get(BASE_URL + "config_dashboard/trackers/get_tracker_generation_schema");
+
+    console.log(data)
     return data.data.data;
   },
   async createTracker(payload: any): Promise<any> {
@@ -131,10 +133,10 @@ const WEB_TEST_APIS = {
 function useGetPackages() {
   return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
 }
-function useGetPlatforms() {
+function useGetNewTrackerSchema() {
   return useQuery({
     queryKey: "platforms",
-    queryFn: WEB_TEST_APIS.getPlatforms,
+    queryFn: WEB_TEST_APIS.getNewTrackerSchema,
   });
 }
 function useGetTrackers(packageName: string | undefined) {
@@ -178,7 +180,7 @@ function useDeleteTracker(packageName: any) {
 export {
   useGetPackages,
   useGetTrackers,
-  useGetPlatforms,
+  useGetNewTrackerSchema ,
   useGetTrackerConfig,
   useCreateTracker,
   useUpdateTrackerConfig,

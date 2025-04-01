@@ -71,6 +71,7 @@ export default function TrackerConfig() {
                 schema={trackerFields["schema"]}
                 defaultValues={trackerFields["config"]}
                 label="config"
+                saveAllOptions
                 ref={formRef}
               />
               <div className="mt-4 p-3 rounded-xl flex justify-end gap-x-4">

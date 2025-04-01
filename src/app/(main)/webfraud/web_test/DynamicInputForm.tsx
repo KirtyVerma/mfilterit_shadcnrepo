@@ -21,13 +21,21 @@ type Props = {
   label: string;
   defaultValues?: Record<string, any>;
   formValues?: Record<string, any>;
+  saveAllOptions?: boolean;
   cb?: Function;
 };
 
 const DynamicInputForm = React.memo(
   forwardRef(
     (
-      { schema, defaultValues = {}, label, formValues = {}, cb }: Props,
+      {
+        schema,
+        defaultValues = {},
+        label,
+        saveAllOptions = false,
+        formValues = {},
+        cb,
+      }: Props,
       ref: any
     ) => {
       const isDropdown = Object.values(schema).every(
@@ -48,7 +56,8 @@ const DynamicInputForm = React.memo(
         (val: any, subLabel: any) => {
           const newValues = { [subLabel ? subLabel : dropdown[label]]: val };
           setValues((prev) => {
-            return { ...prev, ...newValues };
+            if (saveAllOptions) return { ...prev, ...newValues };
+            return { ...newValues };
           });
         },
         [values, dropdown, label]
@@ -61,7 +70,6 @@ const DynamicInputForm = React.memo(
       useImperativeHandle(ref, () => ({
         values: values,
         reset: () => {
-          console.log("object");
           setValues({ ...defaultValues });
           setdropdown({});
         },
@@ -97,6 +105,7 @@ const DynamicInputForm = React.memo(
                 schema={schema[dropdown[label]]}
                 formValues={values}
                 label={dropdown[label]}
+                saveAllOptions={saveAllOptions}
                 cb={saveCurrentValues}
               />
             )}
@@ -198,6 +207,7 @@ const DynamicInputForm = React.memo(
                     schema={field}
                     label={key}
                     formValues={values}
+                    saveAllOptions={saveAllOptions}
                     cb={saveCurrentValues}
                   />
                 );

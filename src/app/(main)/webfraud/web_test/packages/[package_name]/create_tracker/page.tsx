@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useCreateTracker, useGetPlatforms } from "../../../api";
+import { useCreateTracker, useGetNewTrackerSchema } from "../../../api";
 import { Button } from "@/components/ui/button";
 import Loader from "../../../Loader";
 import DynamicInputForm from "../../../DynamicInputForm";
@@ -25,24 +25,19 @@ export default function CreateTracker() {
     data: newTracker,
     isLoading: ctl,
   } = useCreateTracker();
-  const { data: platforms, isLoading } = useGetPlatforms();
-  const formRef: any = useRef();
+  const { data: trackerSchema, isLoading } = useGetNewTrackerSchema();
+  const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState({
     package_name: packageName,
     tracker_name: "",
-    tracker_type: "impression",
-    platform: "",
-    pixel_level: "basic",
   });
-  useEffect(() => {
-    platforms && setValues((prev) => ({ ...prev, ["platform"]: platforms[0] }));
-  }, [platforms]);
 
   function handleSubmit(event: any) {
     event.preventDefault();
-    const formData = formRef?.current?.values();
+    const formData = formRef?.current?.values;
     const fields = { ...values, ...formData };
-    createTracker(fields);
+    console.log(fields);
+    // createTracker(fields);
   }
 
   return (
@@ -53,106 +48,40 @@ export default function CreateTracker() {
         </h2>
       </div>
       <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
-        <form
-          onSubmit={handleSubmit}
-          className=" bg-white dark:bg-gray-500 dark:text-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5"
-        >
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6 capitalize text-md">package_name :</Label>
-            <Input
-              className="w-4/6 dark:bg-gray-300 outline-none dark:border-white"
-              placeholder="Enter value"
-              value={values["package_name"]}
-              disabled
-            />
-          </div>
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6 capitalize text-md">tracker_name :</Label>
-            <Input
-              className="w-4/6 dark:bg-gray-300 outline-none dark:border-white"
-              placeholder="Enter value"
-              value={values["tracker_name"]}
-              required
-              onChange={(e) =>
-                setValues((prev) => ({ ...prev, tracker_name: e.target.value }))
-              }
-            />
-          </div>
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6 capitalize text-md">platforms :</Label>
-            <Select
-              onValueChange={(val) =>
-                setValues((prev) => ({ ...prev, platform: val }))
-              }
-              disabled={isLoading}
-            >
-              <SelectTrigger className="w-4/6 dark:bg-gray-300 outline-none dark:border-white capitalize">
-                {platforms ? (
-                  <SelectValue placeholder={values.platform} />
-                ) : (
-                  <Loader className="!h-5 !w-5" />
-                )}
-              </SelectTrigger>
-              <SelectContent>
-                {platforms?.map((Item: any, i: any) => (
-                  <SelectItem value={Item} key={i} className="capitalize">
-                    {Item}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {trackerSchema ? (
+          <form
+            onSubmit={handleSubmit}
+            className=" bg-white dark:bg-gray-500 dark:text-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5"
+          >
+            <div className="flex items-center justify-between gap-x-5">
+              <Label className="w-4/6 capitalize text-md">package_name :</Label>
+              <Input
+                className="w-full dark:bg-gray-300 outline-none dark:border-white"
+                placeholder="Enter value"
+                value={values["package_name"]}
+                disabled
+              />
+            </div>
 
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6 capitalize text-md">pixel level :</Label>
-            <Select
-              onValueChange={(val) =>
-                setValues((prev) => ({ ...prev, pixel_level: val }))
-              }
-            >
-              <SelectTrigger className="w-4/6 dark:bg-gray-300 outline-none dark:border-white capitalize">
-                <SelectValue placeholder={values.pixel_level} />
-              </SelectTrigger>
-              <SelectContent>
-                {["basic", "intermediate", "advance"].map((Item, i) => (
-                  <SelectItem value={Item} key={i} className="capitalize">
-                    {Item}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex items-center justify-between gap-x-5">
-            <Label className="w-2/6 capitalize text-md">Tracker Type :</Label>
-            <Select
-              onValueChange={(val) =>
-                setValues((prev) => ({ ...prev, tracker_type: val }))
-              }
-            >
-              <SelectTrigger className="w-4/6 dark:bg-gray-300 outline-none dark:border-white capitalize">
-                <SelectValue placeholder={values.tracker_type} />
-              </SelectTrigger>
-              <SelectContent>
-                {["impression", "visit", "click", "event", "s2s"].map(
-                  (Item, i) => (
-                    <SelectItem value={Item} key={i} className="capitalize">
-                      {Item}
-                    </SelectItem>
-                  )
-                )}
-              </SelectContent>
-            </Select>
-            {/* <DDF schema={TRACKER_DATA} label="ff"/> */}
-          </div>
-          <div className="flex gap-x-5">
-            <Button
-              type="submit"
-              className="w-full mt-8 dark:bg-gray-400 dark:text-white"
-            >
-              create tracker
-            </Button>
-          </div>
-        </form>
+            <DynamicInputForm
+              schema={trackerSchema}
+              ref={formRef}
+              label="config"
+            />
+
+            <div className="flex gap-x-5">
+              <Button
+                type="submit"
+                className="w-full mt-8 dark:bg-gray-400 dark:text-white"
+              >
+                create tracker
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <Loader />
+        )}
+        <div className="flex flex-col"></div>
         <div className="sticky top-0 flex justify-center w-full bg-white dark:bg-gray-500 rounded-lg p-5 h-[75vh] ">
           {newTracker ? (
             <CodeBlock code={newTracker.data} language={newTracker.language} />
