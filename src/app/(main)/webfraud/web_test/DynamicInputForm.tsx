@@ -56,8 +56,8 @@ const DynamicInputForm = React.memo(
         (val: any, subLabel: any) => {
           const newValues = { [subLabel ? subLabel : dropdown[label]]: val };
           setValues((prev) => {
-            if (saveAllOptions) return { ...prev, ...newValues };
-            return { ...newValues };
+            if (!saveAllOptions && isDropdown) return { ...newValues };
+            return { ...prev, ...newValues };
           });
         },
         [values, dropdown, label]

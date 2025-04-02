@@ -1,5 +1,5 @@
 import { toast, useToast } from "@/hooks/use-toast";
-import {useMutation,useQuery,useQueryClient} from "react-query"
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { PACKAGES, TRACKER } from "./DATA";
 import axios from "axios";
 
@@ -42,6 +42,18 @@ export class Toast {
 function parseJSON(response: Response) {
   return response.json();
 }
+function flattenObject(obj) {
+  let r = {};
+  for (const [key, value] of Object.entries(obj)) {
+    if (typeof value != "object") r[key] = value;
+    else {
+      let k = Object.keys(value)[0];
+      r[key] = k;
+      r = { ...r, ...flattenObject(value[k]) };
+    }
+  }
+  return r;
+}
 
 const dummyCode = `<script>
 (function(m, f, i, l, t, e, r) {
@@ -73,25 +85,24 @@ const WEB_TEST_APIS = {
   },
   async getTrackers({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
-    const data: any = await axios.get(BASE_URL + `config_dashboard/trackers?package_name=${packageName}`);
+    const data: any = await axios.get(
+      BASE_URL + `config_dashboard/trackers?package_name=${packageName}`
+    );
     return data.data.data;
   },
   async getNewTrackerSchema(): Promise<any> {
-    const data: any = await axios.get(BASE_URL + "config_dashboard/trackers/get_tracker_generation_schema");
-
-    console.log(data)
+    const data: any = await axios.get(
+      BASE_URL + "config_dashboard/trackers/get_tracker_generation_schema"
+    );
     return data.data.data;
   },
   async createTracker(payload: any): Promise<any> {
+    payload = flattenObject(payload);
     let data: any = await axios.post(
       BASE_URL + "config_dashboard/trackers/create",
       payload
     );
     data = data.data.data;
-    console.log(["trackers", payload["package_name"]]);
-    // queryClient.invalidateQueries({
-    //   queryKey: ["trackers", payload["package_name"]],
-    // });
     if (data.tracker_url) {
       return {
         language: "url",
@@ -120,7 +131,7 @@ const WEB_TEST_APIS = {
     return data.data.data;
   },
   async updateTrackerConfig(payload: any): Promise<any> {
-    const { trackerId, data:updatedConfig }: any = payload;
+    const { trackerId, data: updatedConfig }: any = payload;
     let data: any = await axios.patch(
       BASE_URL + `config_dashboard/trackers/${trackerId}/set_config`,
       updatedConfig
@@ -150,6 +161,7 @@ function useGetTrackerConfig(trackerId: string) {
   return useQuery({
     queryKey: ["tracker_config", trackerId],
     queryFn: WEB_TEST_APIS.getTrackerConfig,
+    staleTime: Infinity,
   });
 }
 
@@ -180,7 +192,7 @@ function useDeleteTracker(packageName: any) {
 export {
   useGetPackages,
   useGetTrackers,
-  useGetNewTrackerSchema ,
+  useGetNewTrackerSchema,
   useGetTrackerConfig,
   useCreateTracker,
   useUpdateTrackerConfig,
