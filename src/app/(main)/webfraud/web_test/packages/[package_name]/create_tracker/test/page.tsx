@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import AddMfDisplayTracker from "./HostedDisplayTracker";
 
 interface Question {
   id: string;
@@ -13,6 +14,7 @@ interface Question {
       next?: string;
       action?: () => void;
       text: string;
+      render?: () => JSX.Element;
     };
   };
 }
@@ -59,9 +61,18 @@ const useQuestionnaire = () => {
       id: "display_tracker_type",
       text: "What type of Tracker you want to make?",
       options: {
-        standard: { text: "Standard Tracker" },
-        native: { text: "Native Tracker" },
-        ins: { text: "INS Tracker" },
+        standard: {
+          text: "Standard Tracker",
+          render: () => <AddMfDisplayTracker default_page="display_standard" />,
+        },
+        native: {
+          text: "Native Tracker",
+          render: () => <AddMfDisplayTracker default_page="display_native" />,
+        },
+        ins: {
+          text: "INS Tracker",
+          render: () => <AddMfDisplayTracker default_page="display_ins" />,
+        },
       },
     },
     video_campaign_type: {
@@ -111,7 +122,7 @@ const useQuestionnaire = () => {
 
   useEffect(() => {
     // Initialize state
-    setState(prev => ({
+    setState((prev) => ({
       ...prev,
       currentQuestionId: "advertisement_type",
       previousQuestionId: null,
@@ -121,15 +132,18 @@ const useQuestionnaire = () => {
 
     const handlePopState = () => {
       // When going back, we'll rely on our local state
-      setState(prev => {
+      setState((prev) => {
         if (!prev.previousQuestionId) return prev;
-        
+
         return {
           ...prev,
           currentQuestionId: prev.previousQuestionId,
-          previousQuestionId: Object.entries(questions).find(([_, q]) => 
-            Object.values(q.options).some(opt => opt.next === prev.previousQuestionId)
-          )?.[0] || null,
+          previousQuestionId:
+            Object.entries(questions).find(([_, q]) =>
+              Object.values(q.options).some(
+                (opt) => opt.next === prev.previousQuestionId
+              )
+            )?.[0] || null,
           isComplete: false,
         };
       });
@@ -166,6 +180,20 @@ const useQuestionnaire = () => {
     }
   };
 
+  const getLastRender = () => {
+    if (!state.isComplete) return null;
+
+    // Get the last question ID from the answers
+    const lastQuestionId = Object.keys(state.answers).pop();
+    if (!lastQuestionId) return null;
+
+    const lastQuestion = questions[lastQuestionId];
+    const lastAnswer = state.answers[lastQuestionId];
+    const lastOption = lastQuestion.options[lastAnswer];
+
+    return lastOption.render || null;
+  };
+
   return {
     currentQuestion: questions[state.currentQuestionId],
     previousQuestion: state.previousQuestionId
@@ -175,12 +203,20 @@ const useQuestionnaire = () => {
     isComplete: state.isComplete,
     next,
     canGoBack: !!state.previousQuestionId,
+    getLastRender,
   };
 };
 
 const CreateTracker = () => {
   const router = useRouter();
-  const { currentQuestion, answers, isComplete, next, canGoBack } = useQuestionnaire();
+  const {
+    currentQuestion,
+    answers,
+    isComplete,
+    next,
+    canGoBack,
+    getLastRender,
+  } = useQuestionnaire();
 
   const handleBack = () => {
     if (canGoBack) {
@@ -210,7 +246,7 @@ const CreateTracker = () => {
         </div>
         <div
           id="changethis"
-          className="w-full min-h-[70vh] flex justify-center py-16 bg-white rounded-md relative"
+          className="w-full min-h-[70vh] flex flex-col justify-center p-1 bg-white rounded-md relative"
         >
           {canGoBack && (
             <Button
@@ -222,36 +258,22 @@ const CreateTracker = () => {
               <ChevronLeft className="h-5 w-5" />
             </Button>
           )}
-          <div className="flex flex-col gap-y-20">
+          <div className="bg-green- flex flex-col gap-y-20">
             {isComplete ? (
-              <div className="text-center">
-                <h2 className="text-4xl text-primary mb-4">
-                  Questionnaire Complete!
-                </h2>
-                <p className="text-xl">
-                  Thank you for completing the questionnaire.
-                </p>
-                <div className="mt-8 flex gap-x-4 items-center">
-                  <Button onClick={handleBack} className="mr-4">
-                    <ChevronLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-                  <Button onClick={() => console.log("Submit answers:", answers)}>
-                    Submit
-                  </Button>
-                </div>
+              <div id="render_option_form" className="">
+                {getLastRender()?.() ? getLastRender()?.() : <div className="text-center text-primary">No render specified</div>}
               </div>
             ) : (
               <>
                 <h2 className="capitalize text-primary text-4xl text-center">
                   {currentQuestion.text}
                 </h2>
-                <div className="flex gap-x-6 items-center">
+                <div className="flex gap-x-8 items-center justify-center">
                   {Object.entries(currentQuestion.options).map(
                     ([key, option]) => (
                       <Button
                         key={key}
-                        className="w-2/4 capitalize border-primary border-2 px-14 py-8 bg-white text-black hover:bg-primary hover:text-white max-w-md"
+                        className="w-3/12 capitalize border-primary border-2 px-14 py-8 bg-white text-black hover:bg-primary hover:text-white max-w-md"
                         onClick={() => next(key)}
                       >
                         {option.text}
