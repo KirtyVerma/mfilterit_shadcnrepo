@@ -2,9 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import AddMfDisplayTracker from "./HostedDisplayTracker";
+import UploadCreative from "./uploadyoutbe";
+import AddNonYTCampTracker from "./AddNonYTCampTracker";
 
 interface Question {
   id: string;
@@ -20,14 +22,17 @@ interface Question {
 }
 
 interface QuestionnaireState {
-  currentQuestionId: string;
-  previousQuestionId: string | null;
   answers: Record<string, string>;
-  isComplete: boolean;
+  questionHistory: string[];
+  optionHistory: string[];
 }
 
 const useQuestionnaire = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentStep = searchParams.get("step");
+  const currentOption = searchParams.get("option");
+
   const questions: Record<string, Question> = {
     advertisement_type: {
       id: "advertisement_type",
@@ -53,6 +58,7 @@ const useQuestionnaire = () => {
         },
         no: {
           text: "No, want to host with MFilterIt",
+          render: () => <UploadCreative handleNext={() => {}} />,
           action: () => console.log("Redirect to hosting service"),
         },
       },
@@ -81,6 +87,7 @@ const useQuestionnaire = () => {
       options: {
         youtube: {
           text: "YouTube Campaign",
+          render: () => <UploadCreative handleNext={() => {}} />,
         },
         non_youtube: {
           text: "Non-YouTube Campaign",
@@ -98,6 +105,7 @@ const useQuestionnaire = () => {
         },
         no: {
           text: "No, want to host with MFilterIt",
+          render: () => <UploadCreative handleNext={() => {}} />,
           action: () =>
             console.log("Redirect to hosting service with variation"),
         },
@@ -107,54 +115,29 @@ const useQuestionnaire = () => {
       id: "non_youtube_tracker_type",
       text: "What type of Tracker you want to make?",
       options: {
-        vast: { text: "VAST Tracker" },
-        "1x1": { text: "1x1 Tracker" },
+        vast: { text: "VAST Tracker", render: () => <AddNonYTCampTracker /> },
+        "1x1": {
+          text: "1x1 Tracker",
+          render: () => <AddNonYTCampTracker default_page="1x1" />,
+        },
       },
     },
   };
 
-  const [state, setState] = useState<QuestionnaireState>({
-    currentQuestionId: "advertisement_type",
-    previousQuestionId: null,
+  const [state, setState] = useState<QuestionnaireState>(() => ({
     answers: {},
-    isComplete: false,
-  });
+    questionHistory: currentStep
+      ? ["advertisement_type", currentStep]
+      : ["advertisement_type"],
+    optionHistory: currentOption ? [currentOption] : [],
+  }));
 
-  useEffect(() => {
-    // Initialize state
-    setState((prev) => ({
-      ...prev,
-      currentQuestionId: "advertisement_type",
-      previousQuestionId: null,
-      answers: {},
-      isComplete: false,
-    }));
-
-    const handlePopState = () => {
-      // When going back, we'll rely on our local state
-      setState((prev) => {
-        if (!prev.previousQuestionId) return prev;
-
-        return {
-          ...prev,
-          currentQuestionId: prev.previousQuestionId,
-          previousQuestionId:
-            Object.entries(questions).find(([_, q]) =>
-              Object.values(q.options).some(
-                (opt) => opt.next === prev.previousQuestionId
-              )
-            )?.[0] || null,
-          isComplete: false,
-        };
-      });
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
+  const currentQuestion = currentStep
+    ? questions[currentStep]
+    : questions["advertisement_type"];
+  const isComplete = !!currentOption;
 
   const next = (optionKey: string) => {
-    const currentQuestion = questions[state.currentQuestionId];
     const selectedOption = currentQuestion.options[optionKey];
 
     const newAnswers = {
@@ -162,17 +145,23 @@ const useQuestionnaire = () => {
       [currentQuestion.id]: optionKey,
     };
 
+    const newQuestionId = selectedOption.next || "";
+    const newHistory = [...state.questionHistory, newQuestionId];
+    const newOptionHistory = [...state.optionHistory, optionKey];
+
     setState((prev) => ({
       ...prev,
       answers: newAnswers,
-      previousQuestionId: prev.currentQuestionId,
-      currentQuestionId: selectedOption.next || "",
-      isComplete: !selectedOption.next,
+      questionHistory: newHistory,
+      optionHistory: newOptionHistory,
     }));
 
-    // Only push to history if we're not at the end
     if (selectedOption.next) {
       router.push("?step=" + selectedOption.next, { scroll: false });
+    } else if (selectedOption.render) {
+      router.push(`?step=${currentQuestion.id}&option=${optionKey}`, {
+        scroll: false,
+      });
     }
 
     if (selectedOption.action) {
@@ -180,49 +169,33 @@ const useQuestionnaire = () => {
     }
   };
 
-  const getLastRender = () => {
-    if (!state.isComplete) return null;
-
-    // Get the last question ID from the answers
-    const lastQuestionId = Object.keys(state.answers).pop();
-    if (!lastQuestionId) return null;
-
-    const lastQuestion = questions[lastQuestionId];
-    const lastAnswer = state.answers[lastQuestionId];
-    const lastOption = lastQuestion.options[lastAnswer];
-
-    return lastOption.render || null;
+  const renderForm = () => {
+    if (!currentStep || !currentOption) return null;
+    const question = questions[currentStep];
+    if (!question) return null;
+    const option = question.options[currentOption];
+    if (!option || !option.render) return null;
+    return option.render();
   };
 
   return {
-    currentQuestion: questions[state.currentQuestionId],
-    previousQuestion: state.previousQuestionId
-      ? questions[state.previousQuestionId]
-      : null,
-    answers: state.answers,
-    isComplete: state.isComplete,
+    currentQuestion,
+    isComplete,
     next,
-    canGoBack: !!state.previousQuestionId,
-    getLastRender,
+    canGoBack: state.questionHistory.length > 1,
+    renderForm,
+    selectedOption: currentOption,
   };
 };
 
 const CreateTracker = () => {
   const router = useRouter();
-  const {
-    currentQuestion,
-    answers,
-    isComplete,
-    next,
-    canGoBack,
-    getLastRender,
-  } = useQuestionnaire();
+  const searchParams = useSearchParams();
+  const currentStep = searchParams.get("step");
+  const currentOption = searchParams.get("option");
 
-  const handleBack = () => {
-    if (canGoBack) {
-      router.back();
-    }
-  };
+  const { currentQuestion, isComplete, next, canGoBack, renderForm } =
+    useQuestionnaire();
 
   return (
     <div className="relative py-2 px-8">
@@ -233,7 +206,7 @@ const CreateTracker = () => {
       </div>
 
       <div className="flex flex-row py-2 gap-x-4 rounded-xl mt-3 w-full">
-        <div className="w-2/6 bg-white p-4 rounded-md border-2 border-black border-dashed">
+        <div className="sticky top-0 w-2/6 min-h-[70vh] bg-white p-4 rounded-md border-2 border-black border-dashed">
           {[...Array(3)].map((_g, i) => (
             <div key={i} className="capitalize mb-2">
               <p className="text-primary"> step {i + 1} </p>
@@ -246,22 +219,31 @@ const CreateTracker = () => {
         </div>
         <div
           id="changethis"
-          className="w-full min-h-[70vh] flex flex-col justify-center p-1 bg-white rounded-md relative"
+          className="w-full flex flex-col  p-1 bg-white rounded-md relative"
         >
           {canGoBack && (
-            <Button
-              onClick={handleBack}
-              className="absolute left-4 top-4 text-primary"
-              variant="ghost"
-              size="icon"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
+            <div className="px-8 py-2">
+              <Button
+                onClick={() => router.back()}
+                className="text-primary w-fit px-3 "
+                variant="ghost"
+                size="icon"
+              >
+                <span className="flex   items-center gap-x-2">
+                  <ChevronLeft className="h-5 w-5" />
+                  Back
+                </span>
+              </Button>
+            </div>
           )}
           <div className="bg-green- flex flex-col gap-y-20">
             {isComplete ? (
               <div id="render_option_form" className="">
-                {getLastRender()?.() ? getLastRender()?.() : <div className="text-center text-primary">No render specified</div>}
+                {renderForm() || (
+                  <div className="text-center text-primary">
+                    No render specified
+                  </div>
+                )}
               </div>
             ) : (
               <>
