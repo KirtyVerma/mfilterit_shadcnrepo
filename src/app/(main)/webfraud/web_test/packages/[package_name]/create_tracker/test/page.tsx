@@ -7,6 +7,8 @@ import { ChevronLeft } from "lucide-react";
 import AddMfDisplayTracker from "./forms/HostedDisplayTracker";
 import UploadCreative from "./forms/uploadyoutbe";
 import AddNonYTCampTracker from "./forms/AddNonYTCampTracker";
+import AddYoutubeTracker from "./forms/AddYoutubeTracker";
+
 
 interface Question {
   id: string;
@@ -27,17 +29,14 @@ interface QuestionnaireState {
 
 const STEPS = [
   {
-    id: "Step 1 :",
     title: "Advertisement type selection",
     text: "Trackes can be created based on the type of Advertisement.",
   },
   {
-    id: "Step 2 :",
     title: "Basic Configuration",
     text: "Configure basic details in order to create a tracker.",
   },
   {
-    id: "Step 3 :",
     title: "Tracker Creation",
     text: "Create a tracker by entering detailed information about your tracker.",
   },
@@ -104,7 +103,7 @@ const useQuestionnaire = () => {
       options: {
         youtube: {
           text: "YouTube Campaign",
-          render: () => <UploadCreative handleNext={() => {}} />,
+          render: () => <AddYoutubeTracker/>,
         },
         non_youtube: {
           text: "Non-YouTube Campaign",
@@ -243,7 +242,7 @@ const CreateTracker = () => {
               key={i}
               className={`capitalize p-3 rounded-lg ${currentStep(i) ? "bg-green-100/40" : ""}`}
             >
-              <p className={`text-gray-500 ${currentStep(i) ? "text-primary" : ""}`}> steps {i + 1}:</p>
+              <p className={`text-gray-500 ${currentStep(i) ? "text-primary" : ""}`}> Step {i + 1}:</p>
               <p
                 className={`text-gray-400 font-medium ${currentStep(i) ? "text-green-600" : ""}`}
               >
