@@ -23,7 +23,6 @@ interface Question {
 
 interface QuestionnaireState {
   answers: Record<string, string>;
-  questionHistory: string[];
   optionHistory: string[];
 }
 
@@ -32,6 +31,7 @@ const useQuestionnaire = () => {
   const searchParams = useSearchParams();
   const currentStep = searchParams.get("step");
   const currentOption = searchParams.get("option");
+  const previousStep = searchParams.get("prev");
 
   const questions: Record<string, Question> = {
     advertisement_type: {
@@ -126,9 +126,6 @@ const useQuestionnaire = () => {
 
   const [state, setState] = useState<QuestionnaireState>(() => ({
     answers: {},
-    questionHistory: currentStep
-      ? ["advertisement_type", currentStep]
-      : ["advertisement_type"],
     optionHistory: currentOption ? [currentOption] : [],
   }));
 
@@ -145,21 +142,18 @@ const useQuestionnaire = () => {
       [currentQuestion.id]: optionKey,
     };
 
-    const newQuestionId = selectedOption.next || "";
-    const newHistory = [...state.questionHistory, newQuestionId];
     const newOptionHistory = [...state.optionHistory, optionKey];
 
     setState((prev) => ({
       ...prev,
       answers: newAnswers,
-      questionHistory: newHistory,
       optionHistory: newOptionHistory,
     }));
 
     if (selectedOption.next) {
-      router.push("?step=" + selectedOption.next, { scroll: false });
+      router.push(`?step=${selectedOption.next}&prev=${currentStep}`, { scroll: false });
     } else if (selectedOption.render) {
-      router.push(`?step=${currentQuestion.id}&option=${optionKey}`, {
+      router.push(`?step=${currentQuestion.id}&option=${optionKey}&prev=${currentStep}`, {
         scroll: false,
       });
     }
@@ -182,7 +176,7 @@ const useQuestionnaire = () => {
     currentQuestion,
     isComplete,
     next,
-    canGoBack: state.questionHistory.length > 1,
+    canGoBack: !!previousStep,
     renderForm,
     selectedOption: currentOption,
   };
@@ -222,7 +216,7 @@ const CreateTracker = () => {
           className="w-full flex flex-col  p-1 bg-white rounded-md relative"
         >
           {canGoBack && (
-            <div className="px-8 py-2">
+            <div className="absolute top-0px-8 py-2">
               <Button
                 onClick={() => router.back()}
                 className="text-primary w-fit px-3 "
@@ -236,7 +230,7 @@ const CreateTracker = () => {
               </Button>
             </div>
           )}
-          <div className="bg-green- flex flex-col gap-y-20">
+          <div className="mt-14 flex flex-col gap-y-20">
             {isComplete ? (
               <div id="render_option_form" className="">
                 {renderForm() || (
@@ -246,7 +240,7 @@ const CreateTracker = () => {
                 )}
               </div>
             ) : (
-              <>
+              <div className="mt-8 flex flex-col space-y-11">
                 <h2 className="capitalize text-primary text-4xl text-center">
                   {currentQuestion.text}
                 </h2>
@@ -263,7 +257,7 @@ const CreateTracker = () => {
                     )
                   )}
                 </div>
-              </>
+              </div>
             )}
           </div>
         </div>

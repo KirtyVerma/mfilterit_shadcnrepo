@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { Loader2, AlertCircle, CheckCircle2, Copy } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle2, Copy, Upload, Trash2 } from "lucide-react";
 import axios from "axios";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
@@ -36,37 +36,67 @@ const initialValues: FormValues = {
 
 const validationSchema = Yup.object().shape({
   creativeName: Yup.string().required("Creative Name is required"),
-  creativeUrl: Yup.string().test(
-    "file-or-url",
-    "Either Creative URL or File is required",
-    function (value) {
-      const files = this.parent.files;
-      return !!(value || (files && files.length > 0));
-    }
-  ),
+  creativeUrl: Yup.string()
+    .test(
+      "url-or-file",
+      "Either Creative URL or File is required",
+      function (value) {
+        const files = this.parent.files;
+        return !!(value || (files && files.length > 0));
+      }
+    )
+    .test(
+      "not-both",
+      "Please provide either URL or File, not both",
+      function (value) {
+        const files = this.parent.files;
+        return !(value && files && files.length > 0);
+      }
+    )
+    .when("files", {
+      is: (files: FileMetadata[] | undefined) => !files || files.length === 0,
+      then: (schema) => schema.required("Creative URL is required when no file is uploaded"),
+    }),
   height: Yup.number()
-    .required("Height is required")
+    .nullable()
+    .transform((value) => (value === "" ? null : value))
     .positive("Height must be positive"),
   width: Yup.number()
-    .required("Width is required")
+    .nullable()
+    .transform((value) => (value === "" ? null : value))
     .positive("Width must be positive"),
-  files: Yup.array().test(
-    "file-or-url",
-    "Either Creative URL or File is required",
-    function (value) {
-      const url = this.parent.creativeUrl;
-      return !!(url || (value && value.length > 0));
-    }
-  ),
+  files: Yup.array()
+    .test(
+      "url-or-file",
+      "Either Creative URL or File is required",
+      function (value) {
+        const url = this.parent.creativeUrl;
+        return !!(url || (value && value.length > 0));
+      }
+    )
+    .test(
+      "not-both",
+      "Please provide either URL or File, not both",
+      function (value) {
+        const url = this.parent.creativeUrl;
+        return !(url && value && value.length > 0);
+      }
+    ),
 });
 
-const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }) => {
+const UploadCreative = ({
+  handleNext,
+}: {
+  handleNext: (status: string) => void;
+}) => {
   const { toast } = useToast();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState<FileMetadata[]>([]);
 
-  const handleDeleteFiles = (setFieldValue: (field: string, value: any) => void) => {
+  const handleDeleteFiles = (
+    setFieldValue: (field: string, value: any) => void
+  ) => {
     if (files.length) {
       setFieldValue("files", []);
       setFieldValue("creativeName", "");
@@ -139,8 +169,14 @@ const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }
           : `${values.creativeName}${fileExtention}`;
         formData.append(`creative_name${index}`, creativeName);
         formData.append(`file${index}`, fileMetadata.file);
-        formData.append(`creative_width${index}`, fileMetadata.width.toString());
-        formData.append(`creative_height${index}`, fileMetadata.height.toString());
+        formData.append(
+          `creative_width${index}`,
+          fileMetadata.width.toString()
+        );
+        formData.append(
+          `creative_height${index}`,
+          fileMetadata.height.toString()
+        );
       });
     } else {
       formData.append("creative_name", values.creativeName);
@@ -178,7 +214,7 @@ const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }
   };
 
   return (
-    <Card className="p-8 mt-8">
+    <Card className="p-8 mt-8 max-w-4xl mx-auto">
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
@@ -213,16 +249,35 @@ const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }
                 <label className="text-sm font-medium text-gray-700">
                   Creative URL
                 </label>
-                <Field
-                  as={Input}
-                  name="creativeUrl"
-                  placeholder="Enter Creative URL"
-                  className={`w-full ${
-                    errors.creativeUrl && touched.creativeUrl
-                      ? "border-red-500 focus-visible:ring-red-500"
-                      : ""
-                  }`}
-                />
+                <div className="flex items-center gap-2">
+                  <Field
+                    as={Input}
+                    name="creativeUrl"
+                    placeholder="Enter Creative URL"
+                    className={`flex-1 ${
+                      errors.creativeUrl && touched.creativeUrl
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : ""
+                    }`}
+                  />
+                  <span className="text-gray-500">or</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => inputFileRef.current?.click()}
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="h-4 w-4" />
+                    Browse File
+                  </Button>
+                  <input
+                    type="file"
+                    ref={inputFileRef}
+                    hidden
+                    accept=".png,.jpg,.jpeg,.webp"
+                    onChange={(event) => handleFileChange(event, setFieldValue)}
+                  />
+                </div>
                 {errors.creativeUrl && touched.creativeUrl && (
                   <div className="flex items-center gap-1 text-red-500 text-sm mt-1">
                     <AlertCircle className="h-4 w-4" />
@@ -233,7 +288,7 @@ const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Height*
+                  Height
                 </label>
                 <Field
                   as={Input}
@@ -256,7 +311,7 @@ const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Width*
+                  Width
                 </label>
                 <Field
                   as={Input}
@@ -278,40 +333,31 @@ const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => inputFileRef.current?.click()}
-              >
-                Browse File
-              </Button>
-              <input
-                type="file"
-                ref={inputFileRef}
-                hidden
-                accept=".png,.jpg,.jpeg,.webp"
-                onChange={(event) => handleFileChange(event, setFieldValue)}
-              />
-              {files.length > 0 && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => handleDeleteFiles(setFieldValue)}
-                >
-                  Delete File
-                </Button>
-              )}
-            </div>
-
             {files.length > 0 && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium mb-2">Selected Files:</h3>
-                {files.map((file, index) => (
-                  <div key={index} className="text-sm text-gray-600">
-                    {file.name} ({file.width}x{file.height}, {file.size}MB)
-                  </div>
-                ))}
+              <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-medium text-gray-700">Selected Files:</h3>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteFiles(setFieldValue)}
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Clear All
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {files.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between text-sm text-gray-600 bg-white p-2 rounded border border-gray-200">
+                      <span>{file.name}</span>
+                      <span className="text-gray-500">
+                        {file.width}x{file.height} ({file.size}MB)
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -327,7 +373,10 @@ const UploadCreative = ({ handleNext }: { handleNext: (status: string) => void }
                     <span>Uploading...</span>
                   </div>
                 ) : (
-                  "Upload Creative"
+                  <div className="flex items-center gap-2">
+                    <Upload className="h-4 w-4" />
+                    <span>Upload Creative</span>
+                  </div>
                 )}
               </Button>
             </div>
