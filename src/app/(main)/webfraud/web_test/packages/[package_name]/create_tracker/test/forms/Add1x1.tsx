@@ -14,7 +14,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useParams } from "next/navigation";
 import { Loader2, AlertCircle, CheckCircle2, Copy } from "lucide-react";
-import { useGet1x1Platforms, useCreate1x1Tracker } from "./api";
+import { useGet1x1Platforms, useCreate1x1Tracker } from "../api";
 
 interface Platform {
 	value: string;

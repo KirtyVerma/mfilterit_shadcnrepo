@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { useGetDisplayPlatforms, useCreateDisplayTracker } from "./api";
+import { useGetDisplayPlatforms, useCreateDisplayTracker } from "../api";
 import { Loader2, AlertCircle, CheckCircle2, Copy } from "lucide-react";
 import { useParams } from "next/navigation";
 
