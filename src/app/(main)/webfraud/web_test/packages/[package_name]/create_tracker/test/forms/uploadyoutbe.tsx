@@ -80,7 +80,9 @@ const validationSchema = Yup.object().shape({
     .transform((value) => (value === "" ? null : value))
     .when("creativeType", {
       is: "video",
-      then: (schema) => schema.required("Duration is required for video creatives"),
+      then: (schema) => schema
+        .required("Duration is required for video creatives")
+        .max(300, "Duration must be less than or equal to 300 seconds"),
     })
     .positive("Duration must be positive"),
   files: Yup.array()
@@ -354,6 +356,9 @@ const UploadCreative = ({
                     onChange={(event) => handleFileChange(event, setFieldValue)}
                   />
                 </div>
+                <p className="text-sm text-gray-500 mt-1">
+                  Note: Please provide either a URL or upload a file, not both.
+                </p>
                 {errors.creativeUrl && touched.creativeUrl && (
                   <div className="flex items-center gap-1 text-red-500 text-sm mt-1">
                     <AlertCircle className="h-4 w-4" />

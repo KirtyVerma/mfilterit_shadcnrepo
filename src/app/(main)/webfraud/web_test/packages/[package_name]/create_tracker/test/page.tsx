@@ -23,16 +23,31 @@ interface Question {
 
 interface QuestionnaireState {
   answers: Record<string, string>;
-  optionHistory: string[];
 }
+
+const STEPS = [
+  {
+    id: "Step 1 :",
+    title: "Advertisement type selection",
+    text: "Trackes can be created based on the type of Advertisement.",
+  },
+  {
+    id: "Step 2 :",
+    title: "Basic Configuration",
+    text: "Configure basic details in order to create a tracker.",
+  },
+  {
+    id: "Step 3 :",
+    title: "Tracker Creation",
+    text: "Create a tracker by entering detailed information about your tracker.",
+  },
+];
 
 const useQuestionnaire = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentStep = searchParams.get("step");
   const currentOption = searchParams.get("option");
-  const previousStep = searchParams.get("prev");
-
   const questions: Record<string, Question> = {
     advertisement_type: {
       id: "advertisement_type",
@@ -58,7 +73,9 @@ const useQuestionnaire = () => {
         },
         no: {
           text: "No, want to host with MFilterIt",
-          render: () => <UploadCreative acceptType="image" handleNext={() => {}} />,
+          render: () => (
+            <UploadCreative acceptType="image" handleNext={() => {}} />
+          ),
           action: () => console.log("Redirect to hosting service"),
         },
       },
@@ -105,7 +122,9 @@ const useQuestionnaire = () => {
         },
         no: {
           text: "No, want to host with MFilterIt",
-          render: () => <UploadCreative acceptType="video" handleNext={() => {}} />,
+          render: () => (
+            <UploadCreative acceptType="video" handleNext={() => {}} />
+          ),
           action: () =>
             console.log("Redirect to hosting service with variation"),
         },
@@ -126,7 +145,6 @@ const useQuestionnaire = () => {
 
   const [state, setState] = useState<QuestionnaireState>(() => ({
     answers: {},
-    optionHistory: currentOption ? [currentOption] : [],
   }));
 
   const currentQuestion = currentStep
@@ -142,20 +160,22 @@ const useQuestionnaire = () => {
       [currentQuestion.id]: optionKey,
     };
 
-    const newOptionHistory = [...state.optionHistory, optionKey];
-
     setState((prev) => ({
       ...prev,
       answers: newAnswers,
-      optionHistory: newOptionHistory,
     }));
 
     if (selectedOption.next) {
-      router.push(`?step=${selectedOption.next}&prev=${currentStep}`, { scroll: false });
-    } else if (selectedOption.render) {
-      router.push(`?step=${currentQuestion.id}&option=${optionKey}&prev=${currentStep}`, {
+      router.push(`?step=${selectedOption.next}&prev=${currentStep}`, {
         scroll: false,
       });
+    } else if (selectedOption.render) {
+      router.push(
+        `?step=${currentQuestion.id}&option=${optionKey}&prev=${currentStep}`,
+        {
+          scroll: false,
+        }
+      );
     }
 
     if (selectedOption.action) {
@@ -176,7 +196,6 @@ const useQuestionnaire = () => {
     currentQuestion,
     isComplete,
     next,
-    canGoBack: !!previousStep,
     renderForm,
     selectedOption: currentOption,
   };
@@ -185,11 +204,26 @@ const useQuestionnaire = () => {
 const CreateTracker = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const currentStep = searchParams.get("step");
-  const currentOption = searchParams.get("option");
+  const Step = searchParams.get("step");
+  const option = searchParams.get("option");
+  const canGoBack = Step;
+  const currentStep = (i: number) => {
+    if (!Step) return i === 0;
+    if (
+      [
+        "display_creative_hosted",
+        "display_tracker_type",
+        "video_campaign_type",
+        "non_youtube_hosted",
+        "non_youtube_tracker_type",
+      ].includes(Step) &&
+      !option
+    )
+      return i === 1;
+    if (option) return i === 2;
+  };
 
-  const { currentQuestion, isComplete, next, canGoBack, renderForm } =
-    useQuestionnaire();
+  const { currentQuestion, isComplete, next, renderForm } = useQuestionnaire();
 
   return (
     <div className="relative py-2 px-8">
@@ -200,14 +234,24 @@ const CreateTracker = () => {
       </div>
 
       <div className="flex flex-row py-2 gap-x-4 rounded-xl mt-3 w-full">
-        <div className="sticky top-0 w-2/6 min-h-[70vh] bg-white p-4 rounded-md border-2 border-black border-dashed">
-          {[...Array(3)].map((_g, i) => (
-            <div key={i} className="capitalize mb-2">
-              <p className="text-primary"> step {i + 1} </p>
-              <p className="text-gray-500">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. In
-                laudantium totam aspernatur facere.
+        <div
+          id="render_steps"
+          className="sticky p-1 top-0 w-2/6 min-h-[70vh] bg-white rounded-md border-2 border-primary border-dashed"
+        >
+          {STEPS.map((_g, i) => (
+            <div
+              key={i}
+              className={`capitalize p-3 rounded-lg ${currentStep(i) ? "bg-green-100/40" : ""}`}
+            >
+              <p className={`text-gray-500 ${currentStep(i) ? "text-primary" : ""}`}> steps {i + 1}:</p>
+              <p
+                className={`text-gray-400 font-medium ${currentStep(i) ? "text-green-600" : ""}`}
+              >
+                {_g.title}
               </p>
+              {currentStep(i) && (
+                <p className="font-normal text-green-500">{_g.text}</p>
+              )}
             </div>
           ))}
         </div>
