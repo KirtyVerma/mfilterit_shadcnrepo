@@ -15,7 +15,9 @@ interface FormValues {
   creativeUrl: string;
   height: string;
   width: string;
+  creativeDuration?: string;
   files: FileMetadata[];
+  creativeType: "image" | "video";
 }
 
 interface FileMetadata {
@@ -24,6 +26,12 @@ interface FileMetadata {
   size: string;
   width: number;
   height: number;
+  duration?: number;
+}
+
+interface UploadCreativeProps {
+  handleNext: (status: string) => void;
+  acceptType?: "image" | "video" | "both";
 }
 
 const initialValues: FormValues = {
@@ -31,7 +39,9 @@ const initialValues: FormValues = {
   creativeUrl: "",
   height: "",
   width: "",
+  creativeDuration: "",
   files: [],
+  creativeType: "image",
 };
 
 const validationSchema = Yup.object().shape({
@@ -65,6 +75,14 @@ const validationSchema = Yup.object().shape({
     .nullable()
     .transform((value) => (value === "" ? null : value))
     .positive("Width must be positive"),
+  creativeDuration: Yup.number()
+    .nullable()
+    .transform((value) => (value === "" ? null : value))
+    .when("creativeType", {
+      is: "video",
+      then: (schema) => schema.required("Duration is required for video creatives"),
+    })
+    .positive("Duration must be positive"),
   files: Yup.array()
     .test(
       "url-or-file",
@@ -82,17 +100,30 @@ const validationSchema = Yup.object().shape({
         return !(url && value && value.length > 0);
       }
     ),
+  creativeType: Yup.string().oneOf(["image", "video"]).required(),
 });
 
 const UploadCreative = ({
   handleNext,
-}: {
-  handleNext: (status: string) => void;
-}) => {
+  acceptType = "both",
+}: UploadCreativeProps) => {
   const { toast } = useToast();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState<FileMetadata[]>([]);
+
+  const getAcceptString = () => {
+    switch (acceptType) {
+      case "image":
+        return ".png,.jpg,.jpeg,.webp";
+      case "video":
+        return ".mp4,.webm,.mov";
+      case "both":
+        return ".png,.jpg,.jpeg,.webp,.mp4,.webm,.mov";
+      default:
+        return ".png,.jpg,.jpeg,.webp,.mp4,.webm,.mov";
+    }
+  };
 
   const handleDeleteFiles = (
     setFieldValue: (field: string, value: any) => void
@@ -111,6 +142,28 @@ const UploadCreative = ({
     setFieldValue: (field: string, value: any) => void
   ) => {
     const filesArray = Array.from(event.target.files || []);
+    
+    // Validate file type based on acceptType
+    if (acceptType !== "both") {
+      const invalidFiles = filesArray.filter(file => {
+        if (acceptType === "image") {
+          return !file.type.startsWith("image/");
+        } else if (acceptType === "video") {
+          return !file.type.startsWith("video/");
+        }
+        return false;
+      });
+      
+      if (invalidFiles.length > 0) {
+        toast({
+          title: "Invalid File Type",
+          description: `Please upload only ${acceptType} files`,
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     const selectedFiles = await Promise.all(
       filesArray.map((file) => {
         return new Promise<FileMetadata>((resolve) => {
@@ -118,18 +171,43 @@ const UploadCreative = ({
           reader.readAsDataURL(file);
 
           reader.onload = (e) => {
-            const img = new Image();
-            img.src = e.target?.result as string;
-
-            img.onload = () => {
-              resolve({
-                file,
-                name: file.name,
-                size: (file.size / (1024 * 1024)).toFixed(2),
-                width: img.width,
-                height: img.height,
-              });
+            const isVideo = file.type.startsWith("video/");
+            const metadata = {
+              file,
+              name: file.name,
+              size: (file.size / (1024 * 1024)).toFixed(2),
+              width: 0,
+              height: 0,
             };
+
+            if (isVideo) {
+              const video = document.createElement("video");
+              video.src = e.target?.result as string;
+              video.onloadedmetadata = () => {
+                metadata.width = video.videoWidth;
+                metadata.height = video.videoHeight;
+                const videoMetadata = {
+                  ...metadata,
+                  duration: video.duration,
+                };
+                resolve(videoMetadata);
+                setFieldValue("creativeType", "video");
+                setFieldValue("creativeDuration", video.duration.toFixed(2));
+                setFieldValue("width", video.videoWidth);
+                setFieldValue("height", video.videoHeight);
+              };
+            } else {
+              const img = new Image();
+              img.src = e.target?.result as string;
+              img.onload = () => {
+                metadata.width = img.width;
+                metadata.height = img.height;
+                resolve(metadata);
+                setFieldValue("creativeType", "image");
+                setFieldValue("width", img.width);
+                setFieldValue("height", img.height);
+              };
+            }
           };
         });
       })
@@ -137,8 +215,6 @@ const UploadCreative = ({
 
     setFieldValue("files", selectedFiles);
     setFieldValue("creativeName", selectedFiles[0].name);
-    setFieldValue("width", selectedFiles[0].width);
-    setFieldValue("height", selectedFiles[0].height);
     setFiles(selectedFiles);
   };
 
@@ -274,7 +350,7 @@ const UploadCreative = ({
                     type="file"
                     ref={inputFileRef}
                     hidden
-                    accept=".png,.jpg,.jpeg,.webp"
+                    accept={getAcceptString()}
                     onChange={(event) => handleFileChange(event, setFieldValue)}
                   />
                 </div>
@@ -285,7 +361,9 @@ const UploadCreative = ({
                   </div>
                 )}
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Height
@@ -331,6 +409,31 @@ const UploadCreative = ({
                   </div>
                 )}
               </div>
+
+              {acceptType === "video" && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Creative Duration (seconds)
+                  </label>
+                  <Field
+                    as={Input}
+                    type="number"
+                    name="creativeDuration"
+                    placeholder="Enter Duration"
+                    className={`w-full ${
+                      errors.creativeDuration && touched.creativeDuration
+                        ? "border-red-500 focus-visible:ring-red-500"
+                        : ""
+                    }`}
+                  />
+                  {errors.creativeDuration && touched.creativeDuration && (
+                    <div className="flex items-center gap-1 text-red-500 text-sm mt-1">
+                      <AlertCircle className="h-4 w-4" />
+                      <span>{errors.creativeDuration}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {files.length > 0 && (

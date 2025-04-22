@@ -58,7 +58,7 @@ const useQuestionnaire = () => {
         },
         no: {
           text: "No, want to host with MFilterIt",
-          render: () => <UploadCreative handleNext={() => {}} />,
+          render: () => <UploadCreative acceptType="image" handleNext={() => {}} />,
           action: () => console.log("Redirect to hosting service"),
         },
       },
@@ -105,7 +105,7 @@ const useQuestionnaire = () => {
         },
         no: {
           text: "No, want to host with MFilterIt",
-          render: () => <UploadCreative handleNext={() => {}} />,
+          render: () => <UploadCreative acceptType="video" handleNext={() => {}} />,
           action: () =>
             console.log("Redirect to hosting service with variation"),
         },
