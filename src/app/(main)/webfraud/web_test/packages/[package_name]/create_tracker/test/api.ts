@@ -5,7 +5,7 @@ import { toast } from "@/hooks/use-toast";
 // const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 const BASE_URL = "https://oyyy02f09h.execute-api.ap-south-1.amazonaws.com";
 
-type TrackerType = "display_standard" | "display_native" | "display_ins" | "video_1x1";
+type TrackerType = "display_standard" | "display_native" | "display_ins" | "video_1x1" | "video_youtube";
 
 interface DisplayTrackerPayload {
   tracker_type: TrackerType;
@@ -34,8 +34,19 @@ interface OneXOneTrackerPayload {
   email: string;
 }
 
+interface YoutubeTrackerPayload {
+  platform_name: string;
+  campaign_name: string;
+  tag_identifier: string;
+  ro_number?: string;
+  tracker_type: "video_youtube";
+  email: string;
+  domain_name: string;
+  package_name: string;
+}
+
 const APIS = {
-  async getDisplayPlatforms(packageName: string, trackerType: TrackerType): Promise<any> {
+  async getPlatforms(packageName: string, trackerType: TrackerType): Promise<any> {
     const data: any = await axios.get(
       `${BASE_URL}/api/platforms?package_name=${packageName}&tracker_type=${trackerType}`
     );
@@ -63,13 +74,6 @@ const APIS = {
     return data.data;
   },
 
-  async get1x1Platforms(packageName: string): Promise<any> {
-    const data: any = await axios.get(
-      `${BASE_URL}/api/platforms?package_name=${packageName}&tracker_type=video_1x1`
-    );
-    return data.data.result.data;
-  },
-
   async create1x1Tracker(payload: OneXOneTrackerPayload): Promise<any> {
     const data: any = await axios.post(
       `${BASE_URL}/api/add_1x1_tracker`,
@@ -82,19 +86,25 @@ const APIS = {
     );
     return data.data;
   },
+
+  async createYoutubeTracker(payload: YoutubeTrackerPayload): Promise<any> {
+    const data: any = await axios.post(
+      `${BASE_URL}/api/add_youtube_tracker`,
+      payload,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    return data.data;
+  },
 };
 
-function useGetDisplayPlatforms(packageName: string, trackerType: TrackerType) {
+function useGetPlatforms(packageName: string, trackerType: TrackerType) {
   return useQuery({
-    queryKey: ["display_platforms", packageName, trackerType],
-    queryFn: () => APIS.getDisplayPlatforms(packageName, trackerType),
-  });
-}
-
-function useGet1x1Platforms(packageName: string) {
-  return useQuery({
-    queryKey: ["1x1_platforms", packageName],
-    queryFn: () => APIS.get1x1Platforms(packageName),
+    queryKey: ["platforms", packageName, trackerType],
+    queryFn: () => APIS.getPlatforms(packageName, trackerType),
   });
 }
 
@@ -102,14 +112,16 @@ const successMessages: Record<TrackerType, string> = {
   display_standard: "Standard Display Tracker created successfully",
   display_native: "Native Display Tracker created successfully",
   display_ins: "INS Wrapping Tracker created successfully",
-  video_1x1: "1x1 Tracker created successfully"
+  video_1x1: "1x1 Tracker created successfully",
+  video_youtube: "YouTube Tracker created successfully"
 };
 
 const errorMessages: Record<TrackerType, string> = {
   display_standard: "Failed to create Standard Display Tracker",
   display_native: "Failed to create Native Display Tracker",
   display_ins: "Failed to create INS Wrapping Tracker",
-  video_1x1: "Failed to create 1x1 Tracker"
+  video_1x1: "Failed to create 1x1 Tracker",
+  video_youtube: "Failed to create YouTube Tracker"
 };
 
 function useCreateDisplayTracker() {
@@ -154,4 +166,23 @@ function useCreate1x1Tracker() {
   });
 }
 
-export { useGetDisplayPlatforms, useCreateDisplayTracker, useGet1x1Platforms, useCreate1x1Tracker };
+function useCreateYoutubeTracker() {
+  return useMutation({
+    mutationFn: APIS.createYoutubeTracker,
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "YouTube Tracker created successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create YouTube Tracker",
+        variant: "destructive",
+      });
+    },
+  });
+}
+
+export { useGetPlatforms, useCreateDisplayTracker, useCreate1x1Tracker, useCreateYoutubeTracker };

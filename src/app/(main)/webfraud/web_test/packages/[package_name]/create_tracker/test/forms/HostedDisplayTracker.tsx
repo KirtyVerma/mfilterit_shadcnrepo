@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { useGetDisplayPlatforms, useCreateDisplayTracker } from "../api";
+import { useGetPlatforms, useCreateDisplayTracker } from "../api";
 import { Loader2, AlertCircle, CheckCircle2, Copy } from "lucide-react";
 import { useParams } from "next/navigation";
 
@@ -239,7 +239,7 @@ const TrackerForm: React.FC<{ config: TrackerConfig }> = ({ config }) => {
   const package_name = params.package_name as string;
 
   const { data: platformsData = [], isLoading: isLoadingPlatforms } =
-    useGetDisplayPlatforms(package_name, config.type);
+    useGetPlatforms(package_name, config.type);
   const createDisplayTracker = useCreateDisplayTracker();
 
   const platforms: Platform[] = platformsData.map((data: any) => ({
