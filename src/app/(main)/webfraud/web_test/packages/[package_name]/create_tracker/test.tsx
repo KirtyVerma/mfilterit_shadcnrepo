@@ -28,6 +28,7 @@ export default function CreateTracker({ tracker_type }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState({
     package_name: packageName,
+    tracker_type: tracker_type,
     tracker_name: "",
   });
   const [showCodeDialog, setShowCodeDialog] = useState(false);
@@ -47,7 +48,7 @@ export default function CreateTracker({ tracker_type }) {
 
   return (
     <div className="relative px-8">
-      <h2 className="p-1 capitalize text-2xl text-gray-700 font-medium text-center mb-8 border-b border-gray-200 ">
+      <h2 className="p-1 pb-5 capitalize text-2xl text-gray-700 font-medium text-center mb-8 border-b border-gray-200 ">
         create new <span className="text-primary">{tracker_type}</span> tracker
       </h2>
       <div className="flex flex-col rounded-xl mt-3 w-full">
@@ -65,6 +66,15 @@ export default function CreateTracker({ tracker_type }) {
                 disabled
               />
             </div>
+            <div className="flex items-center justify-between gap-x-5">
+              <Label className="w-4/6 capitalize text-md">type_name :</Label>
+              <Input
+                className="w-full dark:bg-gray-300 outline-none dark:border-white"
+                placeholder="Enter value"
+                value={tracker_type}
+                disabled
+              />
+            </div>
 
             <DynamicInputForm
               schema={trackerSchema}
@@ -76,8 +86,10 @@ export default function CreateTracker({ tracker_type }) {
               <Button
                 type="submit"
                 className="mt-8 dark:bg-gray-400 dark:text-white"
+                disabled={ctl}
               >
                 create tracker
+                {ctl && <Loader className="!text-white !w-4 !h-4 ml-2" />}
               </Button>
             </div>
           </form>
@@ -86,11 +98,11 @@ export default function CreateTracker({ tracker_type }) {
         )}
       </div>
 
-      <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+      <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog} >
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Generated Tracker Code</DialogTitle>
-          </DialogHeader>
+          </DialogHeader> 
           {newTracker ? (
             <CodeBlock code={newTracker.data} language={newTracker.language} />
           ) : (

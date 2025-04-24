@@ -157,7 +157,7 @@ const CreateTracker = () => {
           id="changethis"
           className="w-full flex flex-col p-1 bg-white rounded-md relative overflow-y-auto"
         >
-          <div className="h-15 px-3 bg-white py-2">
+          <div className="h-14 px-3 bg-white py-2">
             {canGoBack && (
               <Button
                 onClick={() => router.back()}
