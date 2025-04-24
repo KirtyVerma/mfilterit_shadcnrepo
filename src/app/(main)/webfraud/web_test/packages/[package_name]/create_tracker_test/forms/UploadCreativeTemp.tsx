@@ -1,6 +1,9 @@
 "use client"
 
 import React, { useState, useRef } from 'react';
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 // API base URL
 const BASE_URL = process.env.REACT_APP_DISPLAY_VIDEO_API_URL;
@@ -181,143 +184,147 @@ const UploadCreative: React.FC<UploadCreativeProps> = ({ handleNext }) => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold mb-6">Upload Creative</h2>
-        
-        {error && (
-          <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-            {error}
-          </div>
-        )}
-        
-        {success && (
-          <div className="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
-            {success}
-          </div>
-        )}
+    <div className="space-y-6">
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-md">
+          {error}
+        </div>
+      )}
+      
+      {success && (
+        <div className="p-4 bg-green-50 border border-green-200 text-green-700 rounded-md">
+          {success}
+        </div>
+      )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Creative Name
-            </label>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
+          <Label className="block text-[#374151] text-sm font-medium">
+            Creative Name
+          </Label>
+          <input
+            type="text"
+            name="creativeName"
+            value={formData.creativeName}
+            onChange={handleInputChange}
+            className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+            placeholder="Enter Creative Name"
+            required
+          />
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-sm text-[#7C3AED]">
+            Note: Either enter creative URL or Browse file to upload.
+          </p>
+          
+          <div className="flex gap-4 items-end">
+            <div className="flex-1 space-y-2">
+              <Label className="block text-[#374151] text-sm font-medium">
+                Creative URL
+              </Label>
+              <input
+                type="text"
+                name="creativeUrl"
+                value={formData.creativeUrl}
+                onChange={handleInputChange}
+                className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                placeholder="Enter URL"
+              />
+            </div>
+            
+            <span className="text-sm font-medium text-[#6B7280]">OR</span>
+            
+            <Button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              variant="outline"
+              className="h-11"
+            >
+              Browse File
+            </Button>
             <input
-              type="text"
-              name="creativeName"
-              value={formData.creativeName}
+              ref={fileInputRef}
+              type="file"
+              accept="video/mp4"
+              onChange={handleFileChange}
+              className="hidden"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-x-8">
+          <div className="space-y-2">
+            <Label className="block text-[#374151] text-sm font-medium">
+              Height
+            </Label>
+            <input
+              type="number"
+              name="height"
+              value={formData.height}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Enter Creative Name"
+              className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+              placeholder="Height"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <p className="text-sm text-gray-500">
-              Note: Either enter creative URL or Browse file to upload.
-            </p>
-            
-            <div className="flex gap-4 items-end">
-              <div className="flex-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Creative URL
-                </label>
-                <input
-                  type="text"
-                  name="creativeUrl"
-                  value={formData.creativeUrl}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter URL"
-                />
-              </div>
-              
-              <span className="text-sm font-medium">OR</span>
-              
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Browse File
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="video/mp4"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
+            <Label className="block text-[#374151] text-sm font-medium">
+              Width
+            </Label>
+            <input
+              type="number"
+              name="width"
+              value={formData.width}
+              onChange={handleInputChange}
+              className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+              placeholder="Width"
+              required
+            />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Height
-              </label>
-              <input
-                type="number"
-                name="height"
-                value={formData.height}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Height"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Width
-              </label>
-              <input
-                type="number"
-                name="width"
-                value={formData.width}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Width"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Duration (sec)
-              </label>
-              <input
-                type="number"
-                name="creativeDuration"
-                value={formData.creativeDuration}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Duration"
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label className="block text-[#374151] text-sm font-medium">
+              Duration (sec)
+            </Label>
+            <input
+              type="number"
+              name="creativeDuration"
+              value={formData.creativeDuration}
+              onChange={handleInputChange}
+              className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+              placeholder="Duration"
+              required
+            />
           </div>
+        </div>
 
-          <button
+        <div className="flex justify-end space-x-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleNext("")}
+            className="h-11"
+          >
+            Cancel
+          </Button>
+          <Button
             type="submit"
             disabled={isUploading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="bg-[#9C27B0] hover:bg-[#7B1FA2] text-white h-11 min-w-[160px]"
           >
             {isUploading ? (
-              <span className="flex items-center justify-center">
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+              <>
+                <Loader2 className="w-4 h-4 animate-spin mr-2" />
                 Uploading...
-              </span>
+              </>
             ) : (
               "Upload Creative"
             )}
-          </button>
-        </form>
-      </div>
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

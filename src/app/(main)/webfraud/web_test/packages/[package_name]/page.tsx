@@ -2,11 +2,11 @@
 import React from "react";
 import { TRACKER } from "../../DATA";
 import { Button } from "@/components/ui/button";
-import ItemTable from "../ItemTable";
+import ItemTable from "../../components/ItemTable";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useDeleteTracker, useGetTrackers } from "../../api";
-import Loader from "../../Loader";
+import Loader from "../../components/Loader";
 import { CirclePlus, Cog, Trash2 } from "lucide-react";
 import {
   Tooltip,
@@ -45,7 +45,7 @@ export default function ListTrackers() {
             analytics
           </Link>
           <Link
-            href={`${packageName}/create_tracker`}
+            href={`${packageName}/create_tracker_test`}
             className="px-6 py-2 gap-x-3 flex rounded-full capitalize text-white bg-purple-500 dark:bg-gray-400 hover:bg-purple-600"
           >
             <CirclePlus />

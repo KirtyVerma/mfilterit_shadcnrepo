@@ -176,7 +176,7 @@ const AddMfDisplayTracker: React.FC<{ default_page: string }> = ({
   };
 
 	return (
-    <div id="DisplayDashboardComponent" className="p-6 max-w-7xl mx-auto">
+    <div id="DisplayDashboardComponent" className="max-w-7xl mx-auto">
       <div className="border-b border-gray-200 mb-8">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           {trackerConfigs.map((config) => (

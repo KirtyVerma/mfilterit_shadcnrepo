@@ -1,17 +1,15 @@
 "use client";
 import React from "react";
-import { PACKAGES } from "../DATA";
 import { Button } from "@/components/ui/button";
-import ItemTable from "./ItemTable";
+import ItemTable from "../components/ItemTable";
 import { useRouter } from "next/navigation";
 import { useGetPackages } from "../api";
-import Loader from "../Loader";
+import Loader from "../components/Loader";
 
 export default function ListPackages() {
   const router = useRouter();
   const { data, isLoading } = useGetPackages();
-  const handleRowClick = (pkg: (typeof PACKAGES)[0]) => {
-    console.log(pkg);
+  const handleRowClick = (pkg: Record<string, any>) => {
     router.push(`packages/${pkg.package_name}`);
   };
 

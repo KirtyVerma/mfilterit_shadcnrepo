@@ -35,8 +35,8 @@ interface UploadCreativeProps {
 }
 
 const initialValues: FormValues = {
-  creativeName: "",
-  creativeUrl: "",
+    creativeName: "",
+    creativeUrl: "",
   height: "",
   width: "",
   creativeDuration: "",
@@ -268,7 +268,7 @@ const UploadCreative = ({
         `${BASE_URL}/api/add_display_creatives`,
         formData,
         {
-          headers: {
+        headers: {
             "Content-Type": "multipart/form-data",
           },
         }
@@ -300,15 +300,15 @@ const UploadCreative = ({
       >
         {({ isSubmitting, setFieldValue, values, errors, touched }) => (
           <Form className="space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Creative Name*
-                </label>
+            </label>
                 <Field
                   as={Input}
-                  name="creativeName"
-                  placeholder="Enter Creative Name"
+              name="creativeName"
+              placeholder="Enter Creative Name"
                   className={`w-full ${
                     errors.creativeName && touched.creativeName
                       ? "border-red-500 focus-visible:ring-red-500"
@@ -321,16 +321,16 @@ const UploadCreative = ({
                     <span>{errors.creativeName}</span>
                   </div>
                 )}
-              </div>
+          </div>
 
-              <div className="space-y-2">
+          <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Creative URL
                 </label>
                 <div className="flex items-center gap-2">
                   <Field
                     as={Input}
-                    name="creativeUrl"
+                  name="creativeUrl"
                     placeholder="Enter Creative URL"
                     className={`flex-1 ${
                       errors.creativeUrl && touched.creativeUrl
@@ -340,16 +340,16 @@ const UploadCreative = ({
                   />
                   <span className="text-gray-500">or</span>
                   <Button
-                    type="button"
+                type="button"
                     variant="outline"
                     onClick={() => inputFileRef.current?.click()}
                     className="flex items-center gap-2"
-                  >
+              >
                     <Upload className="h-4 w-4" />
-                    Browse File
+                Browse File
                   </Button>
-                  <input
-                    type="file"
+              <input
+                type="file"
                     ref={inputFileRef}
                     hidden
                     accept={getAcceptString()}
@@ -366,17 +366,17 @@ const UploadCreative = ({
                   </div>
                 )}
               </div>
-            </div>
+          </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Height
-                </label>
+                Height
+              </label>
                 <Field
                   as={Input}
-                  type="number"
-                  name="height"
+                type="number"
+                name="height"
                   placeholder="Enter Height"
                   className={`w-full ${
                     errors.height && touched.height
@@ -390,16 +390,16 @@ const UploadCreative = ({
                     <span>{errors.height}</span>
                   </div>
                 )}
-              </div>
+            </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                  Width
-                </label>
+                Width
+              </label>
                 <Field
                   as={Input}
-                  type="number"
-                  name="width"
+                type="number"
+                name="width"
                   placeholder="Enter Width"
                   className={`w-full ${
                     errors.width && touched.width
@@ -413,17 +413,17 @@ const UploadCreative = ({
                     <span>{errors.width}</span>
                   </div>
                 )}
-              </div>
+            </div>
 
               {acceptType === "video" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
                     Creative Duration (seconds)
-                  </label>
+              </label>
                   <Field
                     as={Input}
-                    type="number"
-                    name="creativeDuration"
+                type="number"
+                name="creativeDuration"
                     placeholder="Enter Duration"
                     className={`w-full ${
                       errors.creativeDuration && touched.creativeDuration
@@ -439,7 +439,7 @@ const UploadCreative = ({
                   )}
                 </div>
               )}
-            </div>
+          </div>
 
             {files.length > 0 && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -462,7 +462,7 @@ const UploadCreative = ({
                       <span>{file.name}</span>
                       <span className="text-gray-500">
                         {file.width}x{file.height} ({file.size}MB)
-                      </span>
+              </span>
                     </div>
                   ))}
                 </div>
@@ -484,10 +484,10 @@ const UploadCreative = ({
                   <div className="flex items-center gap-2">
                     <Upload className="h-4 w-4" />
                     <span>Upload Creative</span>
-                  </div>
+      </div>
                 )}
               </Button>
-            </div>
+    </div>
           </Form>
         )}
       </Formik>

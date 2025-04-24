@@ -1,6 +1,5 @@
-import { toast, useToast } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { PACKAGES, TRACKER } from "./DATA";
 import axios from "axios";
 
 type ToastType = {
@@ -90,11 +89,16 @@ const WEB_TEST_APIS = {
     );
     return data.data.data;
   },
-  async getNewTrackerSchema(): Promise<any> {
-    const data: any = await axios.get(
+  async getNewTrackerSchema(tracker_type: string): Promise<any> {
+    let data: any = await axios.get(
       BASE_URL + "config_dashboard/trackers/get_tracker_generation_schema"
     );
-    return data.data.data;
+    data = data.data.data;
+    const tracker_type_data = data.tracker_type[tracker_type];
+    delete data.tracker_type;
+    data = { ...data, ...tracker_type_data };
+
+    return data;
   },
   async createTracker(payload: any): Promise<any> {
     payload = flattenObject(payload);
@@ -144,10 +148,10 @@ const WEB_TEST_APIS = {
 function useGetPackages() {
   return useQuery({ queryKey: "packages", queryFn: WEB_TEST_APIS.getPackages });
 }
-function useGetNewTrackerSchema() {
+function useGetNewTrackerSchema(tracker_type: string) {
   return useQuery({
-    queryKey: "platforms",
-    queryFn: WEB_TEST_APIS.getNewTrackerSchema,
+    queryKey: ["tracker_schema", tracker_type],
+    queryFn: () => WEB_TEST_APIS.getNewTrackerSchema(tracker_type),
   });
 }
 function useGetTrackers(packageName: string | undefined) {

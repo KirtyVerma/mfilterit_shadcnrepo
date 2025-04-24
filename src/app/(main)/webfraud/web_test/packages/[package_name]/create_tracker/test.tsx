@@ -2,35 +2,41 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import CodeBlock from "../../../CodeBlock";
+import CodeBlock from "../../../components/CodeBlock";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import TRACKER_DATA from "./create_tracker";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useCreateTracker, useGetNewTrackerSchema } from "../../../api";
 import { Button } from "@/components/ui/button";
-import Loader from "../../../Loader";
-import DynamicInputForm from "../../../DynamicInputForm";
+import Loader from "../../../components/Loader";
+import DynamicInputForm from "../../../components/DynamicInputForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
-export default function CreateTracker() {
+export default function CreateTracker({ tracker_type }) {
   const packageName = useParams().package_name;
   const {
     mutate: createTracker,
     data: newTracker,
     isLoading: ctl,
   } = useCreateTracker();
-  const { data: trackerSchema, isLoading } = useGetNewTrackerSchema();
+  const { data: trackerSchema, isLoading } =
+    useGetNewTrackerSchema(tracker_type);
   const formRef = useRef<HTMLFormElement>(null);
   const [values, setValues] = useState({
     package_name: packageName,
     tracker_name: "",
   });
+  const [showCodeDialog, setShowCodeDialog] = useState(false);
+
+  useEffect(() => {
+    if (newTracker) {
+      setShowCodeDialog(true);
+    }
+  }, [newTracker]);
 
   function handleSubmit(event: any) {
     event.preventDefault();
@@ -40,17 +46,15 @@ export default function CreateTracker() {
   }
 
   return (
-    <div className="relative py-2 px-8">
-      <div className="px-8 py-5 bg-white dark:bg-gray-500 rounded-xl flex items-center justify-between">
-        <h2 className="text-xl font-medium text-gray-900 dark:text-white capitalize">
-          create Trackers
-        </h2>
-      </div>
-      <div className="flex flex-col lg:flex-row py-2 gap-x-4  rounded-xl mt-3 w-full">
+    <div className="relative px-8">
+      <h2 className="p-1 capitalize text-2xl text-gray-700 font-medium text-center mb-8 border-b border-gray-200 ">
+        create new <span className="text-primary">{tracker_type}</span> tracker
+      </h2>
+      <div className="flex flex-col rounded-xl mt-3 w-full">
         {trackerSchema ? (
           <form
             onSubmit={handleSubmit}
-            className=" bg-white dark:bg-gray-500 dark:text-white rounded-lg p-5 flex flex-col gap-y-4 lg:w-3/5"
+            className="bg-white dark:bg-gray-500 dark:text-white rounded-lg flex flex-col gap-y-4 w-full"
           >
             <div className="flex items-center justify-between gap-x-5">
               <Label className="w-4/6 capitalize text-md">package_name :</Label>
@@ -68,10 +72,10 @@ export default function CreateTracker() {
               label="config"
             />
 
-            <div className="flex gap-x-5">
+            <div className="flex justify-start">
               <Button
                 type="submit"
-                className="w-full mt-8 dark:bg-gray-400 dark:text-white"
+                className="mt-8 dark:bg-gray-400 dark:text-white"
               >
                 create tracker
               </Button>
@@ -80,15 +84,20 @@ export default function CreateTracker() {
         ) : (
           <Loader />
         )}
-        <div className="flex flex-col"></div>
-        <div className="sticky top-0 flex justify-center w-full bg-white dark:bg-gray-500 rounded-lg p-5 h-[75vh] ">
+      </div>
+
+      <Dialog open={showCodeDialog} onOpenChange={setShowCodeDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Generated Tracker Code</DialogTitle>
+          </DialogHeader>
           {newTracker ? (
             <CodeBlock code={newTracker.data} language={newTracker.language} />
           ) : (
             <CodeBlock isloading={ctl} />
           )}
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

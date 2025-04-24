@@ -2,12 +2,12 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import CodeBlock from "../../CodeBlock";
-import DynamicInputForm from "../../DynamicInputForm";
+import CodeBlock from "../../components/CodeBlock";
+import DynamicInputForm from "../../components/DynamicInputForm";
 import TEMP from "./temp";
 import { Button } from "@/components/ui/button";
 import { Toast, useGetTrackerConfig, useUpdateTrackerConfig } from "../../api";
-import Loader from "../../Loader";
+import Loader from "../../components/Loader";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "react-query";
