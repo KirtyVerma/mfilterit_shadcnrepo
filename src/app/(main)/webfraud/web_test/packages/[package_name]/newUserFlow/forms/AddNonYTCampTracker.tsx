@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import AddVastTracker from "./AddVast";
 import Add1x1Tracker from "./Add1x1";
 
@@ -18,7 +17,7 @@ const AddNonYTCampTracker: React.FC<AddNonYTCampTrackerProps> = ({ default_page 
   };
 
   return (
-    <div id="VideoDashboardComponent" className="p-6 max-w-7xl mx-auto">
+    <div id="VideoDashboardComponent" className=" max-w-7xl mx-auto">
       <div className="border-b border-gray-200 mb-8">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           <button
@@ -90,7 +89,7 @@ const AddNonYTCampTracker: React.FC<AddNonYTCampTrackerProps> = ({ default_page 
               : "opacity-0 hidden translate-y-4"
           }`}
         >
-          <Card className="p-6">
+          <Card className="border-none">
             <AddVastTracker trackerType="vast_wrapper" />
           </Card>
         </div>
@@ -101,7 +100,7 @@ const AddNonYTCampTracker: React.FC<AddNonYTCampTrackerProps> = ({ default_page 
               : "opacity-0 hidden translate-y-4"
           }`}
         >
-          <Card className="p-6">
+          <Card className="border-none">
             <Add1x1Tracker />
           </Card>
         </div>

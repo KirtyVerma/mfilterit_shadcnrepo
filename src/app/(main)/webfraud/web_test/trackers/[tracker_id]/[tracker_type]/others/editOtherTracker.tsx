@@ -2,17 +2,16 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import CodeBlock from "../../components/CodeBlock";
-import DynamicInputForm from "../../components/DynamicInputForm";
-import TEMP from "./temp";
 import { Button } from "@/components/ui/button";
-import { Toast, useGetTrackerConfig, useUpdateTrackerConfig } from "../../api";
-import Loader from "../../components/Loader";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useQueryClient } from "react-query";
+import { Toast, useGetTrackerConfig, useUpdateTrackerConfig } from "../../../../api";
+import DynamicInputForm from "../../../../components/DynamicInputForm";
+import Loader from "../../../../components/Loader";
+import CodeBlock from "../../../../components/CodeBlock";
 
-export default function TrackerConfig() {
+export default function EditOtherTracker() {
   const trackerId: any = useParams().tracker_id;
   const tracker_name: any = useParams().tracker_name;
   const {

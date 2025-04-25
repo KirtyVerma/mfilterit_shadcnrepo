@@ -2,13 +2,13 @@
 
 import { useParams } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
-import CodeBlock from "../../../components/CodeBlock";
+import CodeBlock from "../../../../components/CodeBlock";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useCreateTracker, useGetNewTrackerSchema } from "../../../api";
+import { useCreateTracker, useGetNewTrackerSchema } from "../../../../api";
 import { Button } from "@/components/ui/button";
-import Loader from "../../../components/Loader";
-import DynamicInputForm from "../../../components/DynamicInputForm";
+import Loader from "../../../../components/Loader";
+import DynamicInputForm from "../../../../components/DynamicInputForm";
 import {
   Dialog,
   DialogContent,

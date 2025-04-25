@@ -24,6 +24,7 @@ export default function ListTrackers() {
       render: (item: any) => (
         <ActionButton
           trackerId={item.tracker_id}
+          tracker_type={item.tracker_type}
           packageName={packageName}
           cb={refetch}
         />
@@ -45,7 +46,7 @@ export default function ListTrackers() {
             analytics
           </Link>
           <Link
-            href={`${packageName}/create_tracker_test`}
+            href={`${packageName}/newUserFlow`}
             className="px-6 py-2 gap-x-3 flex rounded-full capitalize text-white bg-purple-500 dark:bg-gray-400 hover:bg-purple-600"
           >
             <CirclePlus />
@@ -71,7 +72,7 @@ export default function ListTrackers() {
   );
 }
 
-function ActionButton({ packageName, trackerId, cb }: any) {
+function ActionButton({ packageName, trackerId, tracker_type, cb }: any) {
   const nav = useRouter();
   const {
     mutate: deleteTracker,
@@ -81,15 +82,17 @@ function ActionButton({ packageName, trackerId, cb }: any) {
   function onDelete() {
     deleteTracker({ packageName, trackerId });
   }
+
+  function onEdit() {
+    nav.push(`/webfraud/web_test/trackers/${trackerId}/${tracker_type}`);
+  }
   return (
     <TooltipProvider delayDuration={100}>
       <div className="flex gap-x-2 items-center justify-around">
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
-              onClick={() =>
-                nav.push(`/webfraud/web_test/trackers/${trackerId}`)
-              }
+              onClick={onEdit}
               className="p-0 bg-transparent text-gray-400 dark:text-white "
             >
               <Cog className="hover:animate-spin" />

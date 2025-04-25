@@ -1,10 +1,9 @@
 import AddMfDisplayTracker from "./forms/HostedDisplayTracker";
-import UploadCreative from "./forms/UploadCreative";
 import AddNonYTCampTracker from "./forms/AddNonYTCampTracker";
 import AddYoutubeTracker from "./forms/AddYoutubeTracker";
 import AddVastTracker from "./forms/AddVast";
 import AddDisplayTracker from "./forms/AddDisplay";
-import CreateTracker from "../create_tracker/test";
+import CreateTracker from "./create_tracker/createTrackerOpt";
 
 export const questions = {
   choose_ad_type: {
@@ -19,25 +18,15 @@ export const questions = {
         text: "Video",
         next: "video_campaign_platform",
       },
-      impression: {
-        text: "Impression",
-        render: () => <CreateTracker tracker_type="impression" />,
-      },
+
       visit: {
         text: "Visit",
         render: () => <CreateTracker tracker_type="visit" />,
       },
-      click: {
-        text: "Click",
-        render: () => <CreateTracker tracker_type="click" />,
-      },
+
       event: {
         text: "Event",
         render: () => <CreateTracker tracker_type="event" />,
-      },
-      s2s: {
-        text: "S2S",
-        render: () => <CreateTracker tracker_type="s2s" />,
       },
     },
   },
