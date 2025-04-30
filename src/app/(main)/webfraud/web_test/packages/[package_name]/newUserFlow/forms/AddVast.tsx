@@ -4,29 +4,25 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Loader2, Info, Upload } from "lucide-react";
+import { Loader2, Info, Upload, AlertCircle } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import UploadCreative from "./UploadCreative";
-
-const BASE_URL = "https://oyyy02f09h.execute-api.ap-south-1.amazonaws.com";
-
-interface TrackerCopyModalProps {
-  show: boolean;
-  tracker: string;
-  onHide: () => void;
-  resetForm: () => void;
-}
-
-interface AddVastTrackerProps {
-  trackerType?: string;
-  inputType?: "url" | "upload";
-}
 
 interface FormValues {
   domain_name: string;
@@ -58,86 +54,102 @@ interface CustomTracker {
   url: string;
 }
 
-const schema = Yup.object().shape({
-  domain_name: Yup.string().required("Domain name is required"),
+interface AddVastTrackerProps {
+  trackerType?: string;
+  inputType?: "url" | "upload";
+}
+
+const baseSchema = Yup.object().shape({
   campaign_name: Yup.string().required("Campaign name is required"),
   platform_name: Yup.string().required("Platform name is required"),
   adset: Yup.string().required("Adset is required"),
   tag_identifier: Yup.string().required("Tag identifier is required"),
-  ro_number: Yup.string().required("RO number is required"),
-  creative_id: Yup.string().required("Creative ID is required"),
-  vast_wrapper_url: Yup.string().test("vast_wrapper_url", "VAST wrapper URL is required", function (value) {
-    return this.parent.tracker_type !== "vast_wrapper" || !!value;
-  }),
-  vast_creative_url: Yup.string().test("vast_creative_url", "VAST creative URL is required", function (value) {
-    return this.parent.tracker_type !== "vast_creative" || !!value;
-  }),
-  capping_threshold: Yup.string().test("capping_threshold", "Capping threshold must be a number", function (value) {
-    if (!value) return true;
-    return !isNaN(Number(value));
-  }),
-  capping_timeframe: Yup.string().test("capping_timeframe", "Capping timeframe is required when threshold is set", function (value) {
-    if (this.parent.capping_threshold && !value) return false;
-    return true;
-  }),
-  double_spotting_threshold: Yup.string().test("double_spotting_threshold", "Double spotting threshold must be a number", function (value) {
-    if (!this.parent.enable_double_spotting) return true;
-    if (!value) return false;
-    return !isNaN(Number(value));
-  }),
+  ro_number: Yup.string(),
+  capping_threshold: Yup.string().test(
+    "capping_threshold",
+    "Capping threshold must be a number",
+    function (value) {
+      if (!value) return true;
+      return !isNaN(Number(value));
+    }
+  ),
+  capping_timeframe: Yup.string().test(
+    "capping_timeframe",
+    "Capping timeframe is required when threshold is set",
+    function (value) {
+      if (this.parent.capping_threshold && !value) return false;
+      return true;
+    }
+  ),
+  double_spotting_threshold: Yup.string().test(
+    "double_spotting_threshold",
+    "Double spotting threshold must be a number",
+    function (value) {
+      if (!this.parent.enable_double_spotting) return true;
+      if (!value) return false;
+      return !isNaN(Number(value));
+    }
+  ),
 });
 
-const TrackerCopyModal: React.FC<TrackerCopyModalProps> = ({ show, tracker, onHide, resetForm }) => {
-  const router = useRouter();
-  const [copyBtnText, setCopyBtnText] = useState("Copy Tracker");
-
-  const closeModal = () => {
-    router.push('/dvtrackers/video');
-    onHide();
-  };
-
-  return (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center ${show ? 'block' : 'hidden'}`}>
-      <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-        <h2 className="text-xl font-semibold mb-4">Tracker created successfully! Please copy the tracker.</h2>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">VAST Tracker</label>
-          <textarea
-            className="w-full p-2 border rounded-md"
-            rows={3}
-            value={tracker}
-            disabled
-          />
-        </div>
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" onClick={closeModal}>Close</Button>
-          <Button onClick={() => {
-            navigator.clipboard.writeText(tracker);
-            setCopyBtnText("Copied successfully!");
-            setTimeout(() => setCopyBtnText("Copy Tracker"), 1000);
-          }}>
-            {copyBtnText}
-          </Button>
-          <Button onClick={() => {
-            resetForm();
-            onHide();
-          }}>
-            Create Tracker again
-          </Button>
-        </div>
-      </div>
-    </div>
+const urlSchema = baseSchema
+  .shape({
+    vast_wrapper_url: Yup.string()
+      .url("Please enter a valid URL")
+      .test(
+        "either-url-required",
+        "VAST wrapper URL is required when creative URL is empty",
+        function (value) {
+          const { vast_creative_url } = this.parent;
+          if (!vast_creative_url && !value) {
+            return false;
+          }
+          return true;
+        }
+      ),
+    vast_creative_url: Yup.string()
+      .url("Please enter a valid URL")
+      .test(
+        "either-url-required",
+        "VAST creative URL is required when wrapper URL is empty",
+        function (value) {
+          const { vast_wrapper_url } = this.parent;
+          if (!vast_wrapper_url && !value) {
+            return false;
+          }
+          return true;
+        }
+      ),
+    creative_id: Yup.string(),
+  })
+  .test(
+    "mutually-exclusive-urls",
+    "Please provide either VAST wrapper URL or VAST creative URL, not both",
+    function (value) {
+      const { vast_wrapper_url, vast_creative_url } = value;
+      if (vast_wrapper_url && vast_creative_url) {
+        return false;
+      }
+      return true;
+    }
   );
-};
 
-const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_creative", inputType = "url" }) => {
+const uploadSchema = baseSchema.shape({
+  creative_id: Yup.string().required("Creative ID is required"),
+  vast_wrapper_url: Yup.string(),
+  vast_creative_url: Yup.string(),
+});
+
+const AddVastTracker: React.FC<AddVastTrackerProps> = ({
+  trackerType = "vast_creative",
+  inputType = "url",
+}) => {
   const { toast } = useToast();
-  const [activeTrackerType, setActiveTrackerType] = useState(trackerType);
-  const ref = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [generatedVastTracker, setGeneratedVastTracker] = useState<string | null>(null);
   const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([]);
+  const ref = useRef(null);
   const params = useParams();
   const packageName = params.package_name as string;
 
@@ -166,19 +178,64 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
     double_spotting_threshold: "",
   };
 
-  const handleSubmitAPI = async (values: FormValues) => {
+  const handleUrlSubmit = async (values: FormValues) => {
     try {
-      const response = await axios.post(`${BASE_URL}/vast_tracker`, values);
-      setGeneratedVastTracker(response.data.tracker_url);
+      if (!values.vast_wrapper_url && !values.vast_creative_url) {
+        toast({
+          title: "Error",
+          description: "Please provide either VAST wrapper URL or VAST creative URL",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (values.vast_wrapper_url && values.vast_creative_url) {
+        toast({
+          title: "Error",
+          description: "Please provide only one URL type, not both",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("URL Form Values:", values);
+      setGeneratedVastTracker(JSON.stringify(values, null, 2));
       setShowModal(true);
       toast({
         title: "Success",
-        description: "VAST tracker created successfully",
+        description: "URL form submitted successfully",
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to create VAST tracker",
+        description: "Failed to submit URL form",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUploadSubmit = async (values: FormValues) => {
+    try {
+      if (!values.creative_id) {
+        toast({
+          title: "Error",
+          description: "Creative ID is required for upload type",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log("Upload Form Values:", values);
+      setGeneratedVastTracker(JSON.stringify(values, null, 2));
+      setShowModal(true);
+      toast({
+        title: "Success",
+        description: "Upload form submitted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit upload form",
         variant: "destructive",
       });
     }
@@ -189,18 +246,38 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
       <Formik
         innerRef={ref}
         enableReinitialize={true}
-        validationSchema={schema}
-        onSubmit={handleSubmitAPI}
+        validationSchema={inputType === "url" ? urlSchema : uploadSchema}
+        onSubmit={inputType === "url" ? handleUrlSubmit : handleUploadSubmit}
         initialValues={initialFormValues}
+        validateOnChange={true}
+        validateOnBlur={true}
       >
-        {({ values, handleChange, setFieldValue, handleBlur, touched, errors, resetForm, isSubmitting }) => (
+        {({
+          values,
+          handleChange,
+          setFieldValue,
+          handleBlur,
+          touched,
+          errors,
+          resetForm,
+          isSubmitting,
+          isValid,
+          dirty,
+        }) => (
           <div>
-            <TrackerCopyModal
-              show={!!generatedVastTracker}
-              tracker={generatedVastTracker || ""}
-              onHide={() => setGeneratedVastTracker(null)}
-              resetForm={() => resetForm({ values: initialFormValues })}
-            />
+            <Dialog open={showModal} onOpenChange={setShowModal}>
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Form Values</DialogTitle>
+                </DialogHeader>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <pre className="whitespace-pre-wrap text-sm">
+                    {JSON.stringify({ values, errors, isValid, dirty }, null, 2)}
+                  </pre>
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Form className="max-w-[1200px] mx-auto">
               <div className="space-y-8">
                 {inputType === "upload" && (
@@ -218,25 +295,37 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
 
                 <div className="grid grid-cols-3 gap-x-6">
                   <div>
-                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Campaign Name*</Label>
+                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                      Campaign Name*
+                    </Label>
                     <Field
                       name="campaign_name"
                       className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="Enter Campaign Name"
                     />
                     {errors.campaign_name && touched.campaign_name && (
-                      <div className="text-red-500 text-xs mt-1">{errors.campaign_name}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.campaign_name}
+                      </div>
                     )}
                   </div>
 
                   <div>
-                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Platform*</Label>
+                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                      Platform*
+                    </Label>
                     <Select
                       value={values.platform_name}
-                      onValueChange={(value: string) => setFieldValue("platform_name", value)}
+                      onValueChange={(value: string) =>
+                        setFieldValue("platform_name", value)
+                      }
                     >
                       <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
-                        <SelectValue placeholder="Select Platform" className="text-[#9CA3AF]" />
+                        <SelectValue
+                          placeholder="Select Platform"
+                          className="text-[#9CA3AF]"
+                        />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
                         <SelectItem value="facebook">Facebook</SelectItem>
@@ -245,19 +334,29 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                       </SelectContent>
                     </Select>
                     {errors.platform_name && touched.platform_name && (
-                      <div className="text-red-500 text-xs mt-1">{errors.platform_name}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.platform_name}
+                      </div>
                     )}
                   </div>
 
                   {inputType === "upload" && (
                     <div>
-                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Creatives*</Label>
+                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                        Creatives*
+                      </Label>
                       <Select
                         value={values.creative_id}
-                        onValueChange={(value: string) => setFieldValue("creative_id", value)}
+                        onValueChange={(value: string) =>
+                          setFieldValue("creative_id", value)
+                        }
                       >
                         <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
-                          <SelectValue placeholder="Select Creative" className="text-[#9CA3AF]" />
+                          <SelectValue
+                            placeholder="Select Creative"
+                            className="text-[#9CA3AF]"
+                          />
                         </SelectTrigger>
                         <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
                           <SelectItem value="creative1">Creative 1</SelectItem>
@@ -266,7 +365,10 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                         </SelectContent>
                       </Select>
                       {errors.creative_id && touched.creative_id && (
-                        <div className="text-red-500 text-xs mt-1">{errors.creative_id}</div>
+                        <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.creative_id}
+                        </div>
                       )}
                     </div>
                   )}
@@ -274,14 +376,19 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
 
                 <div className="grid grid-cols-3 gap-x-6">
                   <div>
-                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Ad Set*</Label>
+                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                      Ad Set*
+                    </Label>
                     <Field
                       name="adset"
                       className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="Enter Ad Set"
                     />
                     {errors.adset && touched.adset && (
-                      <div className="text-red-500 text-xs mt-1">{errors.adset}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.adset}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -300,19 +407,27 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                       placeholder="Enter Tracker Name"
                     />
                     {errors.tag_identifier && touched.tag_identifier && (
-                      <div className="text-red-500 text-xs mt-1">{errors.tag_identifier}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.tag_identifier}
+                      </div>
                     )}
                   </div>
 
                   <div>
-                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">RO Number</Label>
+                    <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                      RO Number
+                    </Label>
                     <Field
                       name="ro_number"
                       className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="Enter RO Number"
                     />
                     {errors.ro_number && touched.ro_number && (
-                      <div className="text-red-500 text-xs mt-1">{errors.ro_number}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.ro_number}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -320,12 +435,15 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                 {inputType === "url" && (
                   <>
                     <div className="text-sm text-[#7C3AED] mt-8">
-                      Note: Either enter the VAST wrapper URL or Enter already uploaded creative URL
+                      Note: Either enter the VAST wrapper URL or Enter already
+                      uploaded creative URL
                     </div>
 
                     <div className="grid grid-cols-[1fr,auto,1fr] gap-x-6 items-start">
                       <div>
-                        <Label className="block mb-2.5 text-[#374151] text-sm font-medium">VAST Wrapper URL</Label>
+                        <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                          VAST Wrapper URL
+                        </Label>
                         <Field
                           name="vast_wrapper_url"
                           className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -335,11 +453,15 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                       </div>
 
                       <div className="flex items-center justify-center pt-8">
-                        <span className="text-[#6B7280] text-base font-medium">OR</span>
+                        <span className="text-[#6B7280] text-base font-medium">
+                          OR
+                        </span>
                       </div>
 
                       <div>
-                        <Label className="block mb-2.5 text-[#374151] text-sm font-medium">VAST Creative URL</Label>
+                        <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                          VAST Creative URL
+                        </Label>
                         <Field
                           name="vast_creative_url"
                           className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -348,6 +470,13 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                         />
                       </div>
                     </div>
+                    {(errors.vast_wrapper_url || errors.vast_creative_url) &&
+                      (touched.vast_wrapper_url || touched.vast_creative_url) && (
+                        <div className="text-red-500 text-xs mt-1 text-left flex items-center gap-1">
+                          <AlertCircle className="w-3 h-3" />
+                          {errors.vast_wrapper_url || errors.vast_creative_url}
+                        </div>
+                      )}
                   </>
                 )}
 
@@ -368,7 +497,10 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                           type="number"
                         />
                         {errors.capping_threshold && touched.capping_threshold && (
-                          <div className="text-red-500 text-xs mt-1">{errors.capping_threshold}</div>
+                          <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {errors.capping_threshold}
+                          </div>
                         )}
                       </div>
 
@@ -381,11 +513,18 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                         </Label>
                         <Select
                           value={values.capping_timeframe}
-                          onValueChange={(value: string) => setFieldValue("capping_timeframe", value)}
+                          onValueChange={(value: string) =>
+                            setFieldValue("capping_timeframe", value)
+                          }
                           disabled={!values.capping_threshold}
                         >
-                          <SelectTrigger className={`w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm transition-colors ${!values.capping_threshold ? 'opacity-50 cursor-not-allowed bg-gray-50' : ''}`}>
-                            <SelectValue placeholder="Select Capping Timeframe" className="text-[#9CA3AF]" />
+                          <SelectTrigger
+                            className={`w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm transition-colors ${!values.capping_threshold ? "opacity-50 cursor-not-allowed bg-gray-50" : ""}`}
+                          >
+                            <SelectValue
+                              placeholder="Select Capping Timeframe"
+                              className="text-[#9CA3AF]"
+                            />
                           </SelectTrigger>
                           <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
                             <SelectItem value="daily">Daily</SelectItem>
@@ -394,7 +533,10 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                           </SelectContent>
                         </Select>
                         {errors.capping_timeframe && touched.capping_timeframe && (
-                          <div className="text-red-500 text-xs mt-1">{errors.capping_timeframe}</div>
+                          <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {errors.capping_timeframe}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -409,8 +551,8 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                           }
                           className="w-4 h-4 border border-[#E5E7EB] rounded data-[state=checked]:bg-[#9C27B0] data-[state=checked]:border-[#9C27B0] transition-colors"
                         />
-                        <label 
-                          htmlFor="f_cap_accross_platform" 
+                        <label
+                          htmlFor="f_cap_accross_platform"
                           className="text-[#374151] text-sm font-medium cursor-pointer hover:text-[#9C27B0] transition-colors"
                         >
                           Enable F-cap across platform
@@ -427,8 +569,8 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                             }
                             className="w-4 h-4 border border-[#E5E7EB] rounded data-[state=checked]:bg-[#9C27B0] data-[state=checked]:border-[#9C27B0] transition-colors"
                           />
-                          <label 
-                            htmlFor="enable_double_spotting" 
+                          <label
+                            htmlFor="enable_double_spotting"
                             className="text-[#374151] text-sm font-medium cursor-pointer hover:text-[#9C27B0] transition-colors"
                           >
                             Enable Double Spotting
@@ -443,9 +585,13 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                               placeholder="Enter Double Spotting Threshold"
                               type="number"
                             />
-                            {errors.double_spotting_threshold && touched.double_spotting_threshold && (
-                              <div className="text-red-500 text-xs mt-1">{errors.double_spotting_threshold}</div>
-                            )}
+                            {errors.double_spotting_threshold &&
+                              touched.double_spotting_threshold && (
+                                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {errors.double_spotting_threshold}
+                                </div>
+                              )}
                           </div>
                         )}
                       </div>
@@ -454,10 +600,14 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                 </div>
 
                 <div className="mt-20">
-                  <h3 className="text-[#374151] text-lg font-semibold mb-6">Extra Parameters (Only for Reporting)</h3>
+                  <h3 className="text-[#374151] text-lg font-semibold mb-6">
+                    Extra Parameters (Only for Reporting)
+                  </h3>
                   <div className="grid grid-cols-3 gap-x-6">
                     <div>
-                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Extra Parameter 1</Label>
+                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                        Extra Parameter 1
+                      </Label>
                       <Field
                         name="extra_param_1"
                         className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -466,7 +616,9 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                     </div>
 
                     <div>
-                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Extra Parameter 2</Label>
+                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                        Extra Parameter 2
+                      </Label>
                       <Field
                         name="extra_param_2"
                         className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -475,7 +627,9 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                     </div>
 
                     <div>
-                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Extra Parameter 3</Label>
+                      <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                        Extra Parameter 3
+                      </Label>
                       <Field
                         name="extra_param_3"
                         className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -486,14 +640,22 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                 </div>
 
                 <div className="mt-20">
-                  <h3 className="text-[#374151] text-lg font-semibold mb-6">Custom trackers (optional)</h3>
+                  <h3 className="text-[#374151] text-lg font-semibold mb-6">
+                    Custom trackers (optional)
+                  </h3>
                   <div className="space-y-6">
                     <div className="mb-6">
                       <Button
                         type="button"
                         onClick={() => {
-                          setFieldValue("tp_tracker_type", [...values.tp_tracker_type, ""]);
-                          setFieldValue("tp_tracker_url", [...values.tp_tracker_url, ""]);
+                          setFieldValue("tp_tracker_type", [
+                            ...values.tp_tracker_type,
+                            "",
+                          ]);
+                          setFieldValue("tp_tracker_url", [
+                            ...values.tp_tracker_url,
+                            "",
+                          ]);
                         }}
                         variant="default"
                         className="bg-[#9C27B0] hover:bg-[#7B1FA2] text-white"
@@ -504,9 +666,14 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
 
                     <div className="space-y-6">
                       {values.tp_tracker_type.map((_, index) => (
-                        <div key={index} className="grid grid-cols-[1fr,1fr,auto] gap-x-4 items-start">
+                        <div
+                          key={index}
+                          className="grid grid-cols-[1fr,1fr,auto] gap-x-4 items-start"
+                        >
                           <div>
-                            <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Custom Tracker Name</Label>
+                            <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                              Custom Tracker Name
+                            </Label>
                             <Select
                               value={values.tp_tracker_type[index]}
                               onValueChange={(value: string) => {
@@ -516,12 +683,15 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                               }}
                             >
                               <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
-                                <SelectValue placeholder="Select Tracker Name" className="text-[#9CA3AF]" />
+                                <SelectValue
+                                  placeholder="Select Tracker Name"
+                                  className="text-[#9CA3AF]"
+                                />
                               </SelectTrigger>
                               <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
                                 {customTrackers.map((tracker) => (
-                                  <SelectItem 
-                                    key={tracker.type} 
+                                  <SelectItem
+                                    key={tracker.type}
                                     value={tracker.type}
                                   >
                                     {tracker.type}
@@ -532,7 +702,9 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                           </div>
 
                           <div>
-                            <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Custom Tracker URL</Label>
+                            <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
+                              Custom Tracker URL
+                            </Label>
                             <Field
                               name={`tp_tracker_url.${index}`}
                               className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
@@ -544,8 +716,12 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                             <Button
                               type="button"
                               onClick={() => {
-                                const newTypes = values.tp_tracker_type.filter((_, i) => i !== index);
-                                const newUrls = values.tp_tracker_url.filter((_, i) => i !== index);
+                                const newTypes = values.tp_tracker_type.filter(
+                                  (_, i) => i !== index
+                                );
+                                const newUrls = values.tp_tracker_url.filter(
+                                  (_, i) => i !== index
+                                );
                                 setFieldValue("tp_tracker_type", newTypes);
                                 setFieldValue("tp_tracker_url", newUrls);
                               }}
@@ -579,6 +755,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({ trackerType = "vast_cre
                 </div>
               </div>
             </Form>
+
             <Dialog open={showUploadModal} onOpenChange={setShowUploadModal}>
               <DialogContent className="p-6 min-w-[800px]">
                 <DialogHeader>
