@@ -24,6 +24,13 @@ import {
 } from "@/components/ui/dialog";
 import UploadCreative from "./UploadCreative";
 
+interface VideoMetadata {
+  width: number;
+  height: number;
+  duration: number;
+  url: string;
+}
+
 interface FormValues {
   domain_name: string;
   tracker_type: string;
@@ -38,6 +45,11 @@ interface FormValues {
   creative_id: string;
   vast_wrapper_url: string;
   vast_creative_url: string;
+  vast_creative_metadata?: {
+    creative_width: number;
+    creative_height: number;
+    creative_duration: number;
+  };
   capping_threshold: string;
   capping_timeframe: string;
   f_cap_accross_platform: boolean;
@@ -140,6 +152,27 @@ const uploadSchema = baseSchema.shape({
   vast_creative_url: Yup.string(),
 });
 
+const getVideoMetadata = async (
+  videoUrl: string
+): Promise<{ width: number; height: number; duration: number }> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    video.src = videoUrl;
+
+    video.onloadedmetadata = () => {
+      resolve({
+        width: video.videoWidth,
+        height: video.videoHeight,
+        duration: video.duration,
+      });
+    };
+
+    video.onerror = () => {
+      reject(new Error("Failed to load video metadata"));
+    };
+  });
+};
+
 const AddVastTracker: React.FC<AddVastTrackerProps> = ({
   trackerType = "vast_creative",
   inputType = "url",
@@ -147,7 +180,9 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
   const { toast } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [generatedVastTracker, setGeneratedVastTracker] = useState<string | null>(null);
+  const [generatedVastTracker, setGeneratedVastTracker] = useState<
+    string | null
+  >(null);
   const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([]);
   const ref = useRef(null);
   const params = useParams();
@@ -167,6 +202,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
     creative_id: "",
     vast_wrapper_url: "",
     vast_creative_url: "",
+    vast_creative_metadata: undefined,
     capping_threshold: "",
     capping_timeframe: "",
     f_cap_accross_platform: false,
@@ -178,7 +214,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
     double_spotting_threshold: "",
   };
 
-  const handleUrlSubmit = async (values: FormValues) => {
+  const handleUrlSubmit = async (values: FormValues, { resetForm }: { resetForm: () => void }) => {
     try {
       if (!values.vast_wrapper_url && !values.vast_creative_url) {
         toast({
@@ -198,13 +234,39 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
         return;
       }
 
-      console.log("URL Form Values:", values);
-      setGeneratedVastTracker(JSON.stringify(values, null, 2));
+      if (values.vast_creative_url && typeof values.vast_creative_url === 'string') {
+        try {
+          const metadata = await getVideoMetadata(values.vast_creative_url);
+          values.vast_creative_metadata = {
+            creative_width: metadata.width,
+            creative_height: metadata.height,
+            creative_duration: metadata.duration,
+          };
+        } catch (error) {
+          console.error("Error fetching video metadata:", error);
+        }
+      }
+
+      // Filter out empty values
+      const filteredValues = Object.fromEntries(
+        Object.entries(values).filter(([_, value]) => {
+          if (Array.isArray(value)) {
+            return value.length > 0;
+          }
+          return value !== "" && value !== null && value !== undefined;
+        })
+      );
+
+      console.log("URL Form Values:", filteredValues);
+      setGeneratedVastTracker(JSON.stringify(filteredValues, null, 2));
       setShowModal(true);
       toast({
         title: "Success",
         description: "URL form submitted successfully",
       });
+      
+      // Reset the form after successful submission
+      // resetForm();
     } catch (error) {
       toast({
         title: "Error",
@@ -225,8 +287,18 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
         return;
       }
 
-      console.log("Upload Form Values:", values);
-      setGeneratedVastTracker(JSON.stringify(values, null, 2));
+      // Filter out empty values
+      const filteredValues = Object.fromEntries(
+        Object.entries(values).filter(([_, value]) => {
+          if (Array.isArray(value)) {
+            return value.length > 0;
+          }
+          return value !== "" && value !== null && value !== undefined;
+        })
+      );
+
+      console.log("Upload Form Values:", filteredValues);
+      setGeneratedVastTracker(JSON.stringify(filteredValues, null, 2));
       setShowModal(true);
       toast({
         title: "Success",
@@ -272,7 +344,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                 </DialogHeader>
                 <div className="mt-4 p-4 bg-gray-50 rounded-lg">
                   <pre className="whitespace-pre-wrap text-sm">
-                    {JSON.stringify({ values, errors, isValid, dirty }, null, 2)}
+                    {generatedVastTracker}
                   </pre>
                 </div>
               </DialogContent>
@@ -471,7 +543,8 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                       </div>
                     </div>
                     {(errors.vast_wrapper_url || errors.vast_creative_url) &&
-                      (touched.vast_wrapper_url || touched.vast_creative_url) && (
+                      (touched.vast_wrapper_url ||
+                        touched.vast_creative_url) && (
                         <div className="text-red-500 text-xs mt-1 text-left flex items-center gap-1">
                           <AlertCircle className="w-3 h-3" />
                           {errors.vast_wrapper_url || errors.vast_creative_url}
@@ -496,12 +569,13 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                           placeholder="Enter Capping Threshold"
                           type="number"
                         />
-                        {errors.capping_threshold && touched.capping_threshold && (
-                          <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            {errors.capping_threshold}
-                          </div>
-                        )}
+                        {errors.capping_threshold &&
+                          touched.capping_threshold && (
+                            <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />
+                              {errors.capping_threshold}
+                            </div>
+                          )}
                       </div>
 
                       <div className="space-y-2">
@@ -532,12 +606,13 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                             <SelectItem value="monthly">Monthly</SelectItem>
                           </SelectContent>
                         </Select>
-                        {errors.capping_timeframe && touched.capping_timeframe && (
-                          <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            {errors.capping_timeframe}
-                          </div>
-                        )}
+                        {errors.capping_timeframe &&
+                          touched.capping_timeframe && (
+                            <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                              <AlertCircle className="w-3 h-3" />
+                              {errors.capping_timeframe}
+                            </div>
+                          )}
                       </div>
                     </div>
 
@@ -761,7 +836,10 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                 <DialogHeader>
                   <DialogTitle>Upload Creative</DialogTitle>
                 </DialogHeader>
-                <UploadCreative handleNext={() => setShowUploadModal(false)} acceptType="video" />
+                <UploadCreative
+                  handleNext={() => setShowUploadModal(false)}
+                  acceptType="video"
+                />
               </DialogContent>
             </Dialog>
           </div>
