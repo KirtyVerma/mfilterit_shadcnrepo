@@ -53,7 +53,6 @@ interface FormValues {
   capping_threshold: string;
   capping_timeframe: string;
   f_cap_accross_platform: boolean;
-  enable_custom_tracker: boolean;
   tp_tracker_type: string[];
   tp_tracker_url: string[];
   package_name: string;
@@ -101,6 +100,9 @@ const baseSchema = Yup.object().shape({
       if (!value) return false;
       return !isNaN(Number(value));
     }
+  ),
+  tp_tracker_url: Yup.array().of(
+    Yup.string().url("Please enter a valid URL")
   ),
 });
 
@@ -183,7 +185,14 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
   const [generatedVastTracker, setGeneratedVastTracker] = useState<
     string | null
   >(null);
-  const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([]);
+  const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([
+    { type: "impression", url: "" },
+    { type: "click", url: "" },
+    { type: "complete", url: "" },
+    { type: "first_quartile", url: "" },
+    { type: "midpoint", url: "" },
+    { type: "click_through_tracker", url: "" }
+  ]);
   const ref = useRef(null);
   const params = useParams();
   const packageName = params.package_name as string;
@@ -206,7 +215,6 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
     capping_threshold: "",
     capping_timeframe: "",
     f_cap_accross_platform: false,
-    enable_custom_tracker: false,
     tp_tracker_type: [],
     tp_tracker_url: [],
     package_name: packageName,
@@ -719,26 +727,6 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                     Custom trackers (optional)
                   </h3>
                   <div className="space-y-6">
-                    <div className="mb-6">
-                      <Button
-                        type="button"
-                        onClick={() => {
-                          setFieldValue("tp_tracker_type", [
-                            ...values.tp_tracker_type,
-                            "",
-                          ]);
-                          setFieldValue("tp_tracker_url", [
-                            ...values.tp_tracker_url,
-                            "",
-                          ]);
-                        }}
-                        variant="default"
-                        className="bg-[#9C27B0] hover:bg-[#7B1FA2] text-white"
-                      >
-                        Add Custom Tracker
-                      </Button>
-                    </div>
-
                     <div className="space-y-6">
                       {values.tp_tracker_type.map((_, index) => (
                         <div
@@ -764,14 +752,19 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                                 />
                               </SelectTrigger>
                               <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
-                                {customTrackers.map((tracker) => (
-                                  <SelectItem
-                                    key={tracker.type}
-                                    value={tracker.type}
-                                  >
-                                    {tracker.type}
-                                  </SelectItem>
-                                ))}
+                                {customTrackers
+                                  .filter(tracker => 
+                                    !values.tp_tracker_type.includes(tracker.type) || 
+                                    tracker.type === values.tp_tracker_type[index]
+                                  )
+                                  .map((tracker) => (
+                                    <SelectItem
+                                      key={tracker.type}
+                                      value={tracker.type}
+                                    >
+                                      {tracker.type}
+                                    </SelectItem>
+                                  ))}
                               </SelectContent>
                             </Select>
                           </div>
@@ -785,6 +778,12 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                               className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                               placeholder="Enter Tracker URL"
                             />
+                            {errors.tp_tracker_url && (errors.tp_tracker_url as string[])[index] && touched.tp_tracker_url?.[index] && (
+                              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {(errors.tp_tracker_url as string[])[index]}
+                              </div>
+                            )}
                           </div>
 
                           <div className="pt-8">
@@ -808,6 +807,26 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                           </div>
                         </div>
                       ))}
+                    </div>
+
+                    <div className="mb-6">
+                      <Button
+                        type="button"
+                        onClick={() => {
+                          setFieldValue("tp_tracker_type", [
+                            ...values.tp_tracker_type,
+                            "",
+                          ]);
+                          setFieldValue("tp_tracker_url", [
+                            ...values.tp_tracker_url,
+                            "",
+                          ]);
+                        }}
+                        variant="default"
+                        className="bg-[#9C27B0] hover:bg-[#7B1FA2] text-white"
+                      >
+                        Add Custom Tracker
+                      </Button>
                     </div>
                   </div>
                 </div>
