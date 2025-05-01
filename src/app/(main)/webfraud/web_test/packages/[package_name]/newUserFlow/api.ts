@@ -137,6 +137,7 @@ const APIS = {
       "config_dashboard/create_tracker",
       payload
     );
+
     return data.data;
   },
   async create1x1Tracker(payload: OneXOneTrackerPayload): Promise<any> {
