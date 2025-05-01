@@ -58,6 +58,7 @@ const trackerConfigs: TrackerConfig[] = [
       ),
       extra_param_1: Yup.string(),
       extra_param_2: Yup.string(),
+      extra_param_3: Yup.string(),
     }),
     initialValues: {
       platform: "",
@@ -66,14 +67,16 @@ const trackerConfigs: TrackerConfig[] = [
       ro_number: "",
       extra_param_1: "",
       extra_param_2: "",
+      extra_param_3: "",
     },
     fields: [
       { name: "platform", label: "Select Platform*", required: true },
       { name: "tag_identifier", label: "Tag Identifier*", required: true },
       { name: "campaign_name", label: "Campaign Name*", required: true },
-      { name: "ro_number", label: "RO Number" },
       { name: "extra_param_1", label: "Extra Param 1" },
       { name: "extra_param_2", label: "Extra Param 2" },
+      { name: "extra_param_3", label: "Extra Param 3" },
+      { name: "ro_number", label: "RO Number" },
     ],
   },
   {
@@ -96,6 +99,7 @@ const trackerConfigs: TrackerConfig[] = [
       ),
       extra_param_1: Yup.string(),
       extra_param_2: Yup.string(),
+      extra_param_3: Yup.string(),
     }),
     initialValues: {
       platform: "",
@@ -104,14 +108,16 @@ const trackerConfigs: TrackerConfig[] = [
       ro_number: "",
       extra_param_1: "",
       extra_param_2: "",
+      extra_param_3: "",
     },
     fields: [
       { name: "platform", label: "Select Platform*", required: true },
       { name: "tag_identifier", label: "Tag Identifier*", required: true },
       { name: "campaign_name", label: "Campaign Name*", required: true },
-      { name: "ro_number", label: "RO Number" },
       { name: "extra_param_1", label: "Extra Param 1" },
       { name: "extra_param_2", label: "Extra Param 2" },
+      { name: "extra_param_3", label: "Extra Param 3" },
+      { name: "ro_number", label: "RO Number" },
     ],
   },
   {
@@ -132,6 +138,9 @@ const trackerConfigs: TrackerConfig[] = [
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
         .required("Tag Identifier is required"),
       ins_tag_text: Yup.string().required("INS Tag is required"),
+      extra_param_1: Yup.string(),
+      extra_param_2: Yup.string(),
+      extra_param_3: Yup.string(),
       ro_number: Yup.string().matches(
         /^[a-zA-Z0-9_-]*$/,
         "Invalid characters in the string"
@@ -146,6 +155,9 @@ const trackerConfigs: TrackerConfig[] = [
       tag_identifier: "",
       ro_number: "",
       ins_tag_text: "",
+      extra_param_1: "",
+      extra_param_2: "",
+      extra_param_3: "",  
     },
     fields: [
       { name: "campaign_name", label: "Campaign Name*", required: true },
@@ -160,6 +172,9 @@ const trackerConfigs: TrackerConfig[] = [
         type: "textarea",
         required: true,
       },
+      { name: "extra_param_1", label: "Extra Param 1" },
+      { name: "extra_param_2", label: "Extra Param 2" },
+      { name: "extra_param_3", label: "Extra Param 3" },
       { name: "ro_number", label: "RO Number" },
     ],
   },

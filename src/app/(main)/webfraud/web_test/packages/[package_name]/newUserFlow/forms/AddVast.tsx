@@ -101,8 +101,13 @@ const baseSchema = Yup.object().shape({
       return !isNaN(Number(value));
     }
   ),
+  tp_tracker_type: Yup.array().of(
+    Yup.string().required("Tracker type is required")
+  ),
   tp_tracker_url: Yup.array().of(
-    Yup.string().url("Please enter a valid URL")
+    Yup.string()
+      .required("URL is required")
+      .url("Please enter a valid URL")
   ),
 });
 
@@ -767,6 +772,12 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                                   ))}
                               </SelectContent>
                             </Select>
+                            {errors.tp_tracker_type && (errors.tp_tracker_type as string[])[index] && touched.tp_tracker_type?.[index] && (
+                              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {(errors.tp_tracker_type as string[])[index]}
+                              </div>
+                            )}
                           </div>
 
                           <div>
