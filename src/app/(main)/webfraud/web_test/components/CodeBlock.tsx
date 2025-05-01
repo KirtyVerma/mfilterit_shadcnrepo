@@ -78,7 +78,7 @@ const CodeBlock = ({
           {language === "url" ? (
             <p>{code}</p>
           ) : (
-            <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300">
+            <pre className="overflow-auto rounded-md p-3 bg-[#1e1e1e] text-sm font-mono leading-relaxed text-gray-300 break-words whitespace-pre-wrap">
               {formatCode(code ? code : dummyCode)}
             </pre>
           )}

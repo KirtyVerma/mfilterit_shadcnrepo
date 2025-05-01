@@ -6,13 +6,14 @@ import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { Loader2, Info, ChevronDown, Check, Upload } from "lucide-react";
+import { Loader2, Info, ChevronDown, Check, Upload, AlertCircle } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import UploadCreative from "./UploadCreative";
+import CodeBlock from "../../../../components/CodeBlock";
 
 const BASE_URL = "https://oyyy02f09h.execute-api.ap-south-1.amazonaws.com";
 
@@ -43,6 +44,9 @@ interface FormValues {
   display_creative_url: string;
   capping_threshold: string;
   capping_timeframe: string;
+  f_cap_accross_platform: boolean;
+  enable_double_spotting: boolean;
+  double_spotting_threshold: string;
   tp_tracker_type: string[];
   tp_tracker_url: string[];
   package_name: string;
@@ -53,17 +57,13 @@ interface CustomTracker {
   url: string;
 }
 
-const schema = Yup.object().shape({
-  domain_name: Yup.string().required("Domain name is required"),
+const baseSchema = Yup.object().shape({
+  // domain_name: Yup.string().required("Domain name is required"),
   campaign_name: Yup.string().required("Campaign name is required"),
   platform_name: Yup.string().required("Platform name is required"),
   adset: Yup.string().required("Adset is required"),
   tag_identifier: Yup.string().required("Tag identifier is required"),
-  ro_number: Yup.string().required("RO number is required"),
-  creative_id: Yup.array().of(Yup.string()).min(1, "At least one creative must be selected"),
-  display_creative_url: Yup.string().test("display_creative_url", "Display creative URL is required", function (value) {
-    return this.parent.tracker_type !== "display_creative" || !!value;
-  }),
+  ro_number: Yup.string(),
   capping_threshold: Yup.string().test("capping_threshold", "Capping threshold must be a number", function (value) {
     if (!value) return true;
     return !isNaN(Number(value));
@@ -72,6 +72,23 @@ const schema = Yup.object().shape({
     if (this.parent.capping_threshold && !value) return false;
     return true;
   }),
+  double_spotting_threshold: Yup.string().test("double_spotting_threshold", "Double spotting threshold must be a number", function (value) {
+    if (!this.parent.enable_double_spotting) return true;
+    if (!value) return false;
+    return !isNaN(Number(value));
+  }),
+  tp_tracker_type: Yup.array().of(Yup.string().required("Tracker type is required")),
+  tp_tracker_url: Yup.array().of(Yup.string().required("URL is required").url("Please enter a valid URL")),
+});
+
+const urlSchema = baseSchema.shape({
+  display_creative_url: Yup.string().required("Display creative URL is required").url("Please enter a valid URL"),
+  creative_id: Yup.array().of(Yup.string()),
+});
+
+const uploadSchema = baseSchema.shape({
+  creative_id: Yup.array().of(Yup.string()).min(1, "At least one creative must be selected"),
+  display_creative_url: Yup.string(),
 });
 
 const TrackerCopyModal: React.FC<TrackerCopyModalProps> = ({ show, tracker, onHide, resetForm }) => {
@@ -124,7 +141,14 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [generatedDisplayTracker, setGeneratedDisplayTracker] = useState<string | null>(null);
-  const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([]);
+  const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([
+    { type: "impression", url: "" },
+    { type: "click", url: "" },
+    { type: "complete", url: "" },
+    { type: "first_quartile", url: "" },
+    { type: "midpoint", url: "" },
+    { type: "click_through_tracker", url: "" }
+  ]);
   const [showCreativeDropdown, setShowCreativeDropdown] = useState(false);
   const creativeDropdownRef = useRef<HTMLDivElement>(null);
   const params = useParams();
@@ -158,15 +182,73 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
     display_creative_url: "",
     capping_threshold: "",
     capping_timeframe: "",
+    f_cap_accross_platform: false,
+    enable_double_spotting: false,
+    double_spotting_threshold: "",
     tp_tracker_type: [],
     tp_tracker_url: [],
     package_name: packageName,
   };
 
-  const handleSubmitAPI = async (values: FormValues) => {
+  const handleUrlSubmit = async (values: FormValues, { resetForm }: { resetForm: () => void }) => {
     try {
-      const response = await axios.post(`${BASE_URL}/display_tracker`, values);
-      setGeneratedDisplayTracker(response.data.tracker_url);
+      if (!values.display_creative_url) {
+        toast({
+          title: "Error",
+          description: "Please provide a display creative URL",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const filteredValues = Object.fromEntries(
+        Object.entries(values).filter(([_, value]) => {
+          if (Array.isArray(value)) {
+            return value.length > 0;
+          }
+          return value !== "" && value !== null && value !== undefined;
+        })
+      );
+      console.log(filteredValues);
+      // const response = await axios.post(`${BASE_URL}/display_tracker`, filteredValues);
+      setGeneratedDisplayTracker( JSON.stringify(filteredValues));
+      setShowModal(true);
+      toast({
+        title: "Success",
+        description: "Display tracker created successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create display tracker",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUploadSubmit = async (values: FormValues) => {
+    try {
+      if (!values.creative_id || values.creative_id.length === 0) {
+        toast({
+          title: "Error",
+          description: "At least one creative must be selected",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Filter out empty values
+      const filteredValues = Object.fromEntries(
+        Object.entries(values).filter(([_, value]) => {
+          if (Array.isArray(value)) {
+            return value.length > 0;
+          }
+          return value !== "" && value !== null && value !== undefined;
+        })
+      );
+
+      // const response = await axios.post(`${BASE_URL}/display_tracker`, filteredValues);
+      setGeneratedDisplayTracker( JSON.stringify(filteredValues));
       setShowModal(true);
       toast({
         title: "Success",
@@ -186,18 +268,23 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
       <Formik
         innerRef={ref}
         enableReinitialize={true}
-        validationSchema={schema}
-        onSubmit={handleSubmitAPI}
+        validationSchema={inputType === "url" ? urlSchema : uploadSchema}
+        onSubmit={inputType === "url" ? handleUrlSubmit : handleUploadSubmit}
         initialValues={initialFormValues}
       >
         {({ values, handleChange, setFieldValue, handleBlur, touched, errors, resetForm, isSubmitting }) => (
           <div>
-            <TrackerCopyModal
-              show={!!generatedDisplayTracker}
-              tracker={generatedDisplayTracker || ""}
-              onHide={() => setGeneratedDisplayTracker(null)}
-              resetForm={() => resetForm({ values: initialFormValues })}
-            />
+            <Dialog open={showModal} onOpenChange={setShowModal}>
+              <DialogContent className="max-w-fit max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Form Values</DialogTitle>
+                </DialogHeader>
+                <div className="mt-4 p-4  rounded-lg">
+                    <CodeBlock code={generatedDisplayTracker} language="json" />
+                </div>
+              </DialogContent>
+            </Dialog>
+
             <Form className="max-w-[1200px] mx-auto">
               <div className="space-y-8">
                 {inputType === "upload" && (
@@ -222,7 +309,10 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                       placeholder="Enter Campaign Name"
                     />
                     {errors.campaign_name && touched.campaign_name && (
-                      <div className="text-red-500 text-xs mt-1">{errors.campaign_name}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.campaign_name}
+                      </div>
                     )}
                   </div>
 
@@ -242,7 +332,10 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                       </SelectContent>
                     </Select>
                     {errors.platform_name && touched.platform_name && (
-                      <div className="text-red-500 text-xs mt-1">{errors.platform_name}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.platform_name}
+                      </div>
                     )}
                   </div>
 
@@ -254,7 +347,10 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                       placeholder="Enter Ad Set"
                     />
                     {errors.adset && touched.adset && (
-                      <div className="text-red-500 text-xs mt-1">{errors.adset}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.adset}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -325,7 +421,10 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                       )}
                     </div>
                     {errors.creative_id && touched.creative_id && (
-                      <div className="text-red-500 text-xs mt-1">{errors.creative_id}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.creative_id}
+                      </div>
                     )}
                   </div>
                 )}
@@ -344,7 +443,10 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                       placeholder="Enter Tracker Name"
                     />
                     {errors.tag_identifier && touched.tag_identifier && (
-                      <div className="text-red-500 text-xs mt-1">{errors.tag_identifier}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.tag_identifier}
+                      </div>
                     )}
                   </div>
 
@@ -356,7 +458,10 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                       placeholder="Enter RO Number"
                     />
                     {errors.ro_number && touched.ro_number && (
-                      <div className="text-red-500 text-xs mt-1">{errors.ro_number}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.ro_number}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -370,16 +475,19 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                       placeholder="Enter Display Creative URL"
                     />
                     {errors.display_creative_url && touched.display_creative_url && (
-                      <div className="text-red-500 text-xs mt-1">{errors.display_creative_url}</div>
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.display_creative_url}
+                      </div>
                     )}
                   </div>
                 )}
 
                 <div className="mt-20">
-                  <div className="space-y-6">
+                  <div className="space-y-8">
                     <div className="grid grid-cols-3 gap-x-8">
                       <div className="space-y-2">
-                        <Label className="block text-[#374151] text-sm font-medium flex items-center">
+                        <Label className="text-[#374151] text-sm font-medium flex items-center">
                           Capping Threshold
                           <div className="ml-1.5 rounded-full bg-[#F3F4F6] p-0.5">
                             <Info className="w-4 h-4 text-[#6B7280]" />
@@ -392,7 +500,10 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                           type="number"
                         />
                         {errors.capping_threshold && touched.capping_threshold && (
-                          <div className="text-red-500 text-xs mt-1">{errors.capping_threshold}</div>
+                          <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {errors.capping_threshold}
+                          </div>
                         )}
                       </div>
 
@@ -418,7 +529,61 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                           </SelectContent>
                         </Select>
                         {errors.capping_timeframe && touched.capping_timeframe && (
-                          <div className="text-red-500 text-xs mt-1">{errors.capping_timeframe}</div>
+                          <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            {errors.capping_timeframe}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="f_cap_accross_platform"
+                          checked={values.f_cap_accross_platform}
+                          onCheckedChange={(checked: boolean) => setFieldValue("f_cap_accross_platform", checked)}
+                          className="w-4 h-4 border border-[#E5E7EB] rounded data-[state=checked]:bg-[#9C27B0] data-[state=checked]:border-[#9C27B0] transition-colors"
+                        />
+                        <label
+                          htmlFor="f_cap_accross_platform"
+                          className="text-[#374151] text-sm font-medium cursor-pointer hover:text-[#9C27B0] transition-colors"
+                        >
+                          Enable F-cap across platform
+                        </label>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div className="flex items-center space-x-3">
+                          <Checkbox
+                            id="enable_double_spotting"
+                            checked={values.enable_double_spotting}
+                            onCheckedChange={(checked: boolean) => setFieldValue("enable_double_spotting", checked)}
+                            className="w-4 h-4 border border-[#E5E7EB] rounded data-[state=checked]:bg-[#9C27B0] data-[state=checked]:border-[#9C27B0] transition-colors"
+                          />
+                          <label
+                            htmlFor="enable_double_spotting"
+                            className="text-[#374151] text-sm font-medium cursor-pointer hover:text-[#9C27B0] transition-colors"
+                          >
+                            Enable Double Spotting
+                          </label>
+                        </div>
+
+                        {values.enable_double_spotting && (
+                          <div className="pl-7">
+                            <Field
+                              name="double_spotting_threshold"
+                              className="w-1/3 h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+                              placeholder="Enter Double Spotting Threshold"
+                              type="number"
+                            />
+                            {errors.double_spotting_threshold && touched.double_spotting_threshold && (
+                              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.double_spotting_threshold}
+                              </div>
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -460,6 +625,80 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                 <div className="mt-20">
                   <h3 className="text-[#374151] text-lg font-semibold mb-6">Custom trackers (optional)</h3>
                   <div className="space-y-6">
+                    <div className="space-y-6">
+                      {values.tp_tracker_type.map((_, index) => (
+                        <div key={index} className="grid grid-cols-[1fr,1fr,auto] gap-x-4 items-start">
+                          <div>
+                            <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Custom Tracker Name</Label>
+                            <Select
+                              value={values.tp_tracker_type[index]}
+                              onValueChange={(value: string) => {
+                                const newTypes = [...values.tp_tracker_type];
+                                newTypes[index] = value;
+                                setFieldValue("tp_tracker_type", newTypes);
+                              }}
+                            >
+                              <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
+                                <SelectValue placeholder="Select Tracker Name" className="text-[#9CA3AF]" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
+                                {customTrackers
+                                  .filter(tracker => 
+                                    !values.tp_tracker_type.includes(tracker.type) || 
+                                    tracker.type === values.tp_tracker_type[index]
+                                  )
+                                  .map((tracker) => (
+                                    <SelectItem 
+                                      key={tracker.type} 
+                                      value={tracker.type}
+                                    >
+                                      {tracker.type}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            {errors.tp_tracker_type && Array.isArray(errors.tp_tracker_type) && typeof errors.tp_tracker_type[index] === 'string' && touched.tp_tracker_type?.[index] && (
+                              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.tp_tracker_type[index]}
+                              </div>
+                            )}
+                          </div>
+
+                          <div>
+                            <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Custom Tracker URL</Label>
+                            <Field
+                              name={`tp_tracker_url.${index}`}
+                              className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              placeholder="Enter Tracker URL"
+                            />
+                            {errors.tp_tracker_url && Array.isArray(errors.tp_tracker_url) && typeof errors.tp_tracker_url[index] === 'string' && touched.tp_tracker_url?.[index] && (
+                              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                <AlertCircle className="w-3 h-3" />
+                                {errors.tp_tracker_url[index]}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="pt-8">
+                            <Button
+                              type="button"
+                              onClick={() => {
+                                const newTypes = values.tp_tracker_type.filter((_, i) => i !== index);
+                                const newUrls = values.tp_tracker_url.filter((_, i) => i !== index);
+                                setFieldValue("tp_tracker_type", newTypes);
+                                setFieldValue("tp_tracker_url", newUrls);
+                              }}
+                              variant="destructive"
+                              size="sm"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
                     <div className="mb-6">
                       <Button
                         type="button"
@@ -473,61 +712,6 @@ const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "di
                         Add Custom Tracker
                       </Button>
                     </div>
-
-                    {values.tp_tracker_type.map((_, index) => (
-                      <div key={index} className="grid grid-cols-[1fr,1fr,auto] gap-x-4 items-start">
-                        <div>
-                          <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Custom Tracker Name</Label>
-                          <Select
-                            value={values.tp_tracker_type[index]}
-                            onValueChange={(value: string) => {
-                              const newTypes = [...values.tp_tracker_type];
-                              newTypes[index] = value;
-                              setFieldValue("tp_tracker_type", newTypes);
-                            }}
-                          >
-                            <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
-                              <SelectValue placeholder="Select Tracker Name" className="text-[#9CA3AF]" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
-                              {customTrackers.map((tracker) => (
-                                <SelectItem 
-                                  key={tracker.type} 
-                                  value={tracker.type}
-                                >
-                                  {tracker.type}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-
-                        <div>
-                          <Label className="block mb-2.5 text-[#374151] text-sm font-medium">Custom Tracker URL</Label>
-                          <Field
-                            name={`tp_tracker_url.${index}`}
-                            className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            placeholder="Enter Tracker URL"
-                          />
-                        </div>
-
-                        <div className="pt-8">
-                          <Button
-                            type="button"
-                            onClick={() => {
-                              const newTypes = values.tp_tracker_type.filter((_, i) => i !== index);
-                              const newUrls = values.tp_tracker_url.filter((_, i) => i !== index);
-                              setFieldValue("tp_tracker_type", newTypes);
-                              setFieldValue("tp_tracker_url", newUrls);
-                            }}
-                            variant="destructive"
-                            size="sm"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
 
