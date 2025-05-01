@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import UploadCreative from "./UploadCreative";
+import { useGetPlatforms, useListTpTrackerTypes } from "../api";
 
 interface VideoMetadata {
   width: number;
@@ -105,9 +106,7 @@ const baseSchema = Yup.object().shape({
     Yup.string().required("Tracker type is required")
   ),
   tp_tracker_url: Yup.array().of(
-    Yup.string()
-      .required("URL is required")
-      .url("Please enter a valid URL")
+    Yup.string().required("URL is required").url("Please enter a valid URL")
   ),
 });
 
@@ -184,23 +183,28 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
   trackerType = "vast_creative",
   inputType = "url",
 }) => {
+  const params = useParams();
+  const packageName = params.package_name as string;
   const { toast } = useToast();
   const [showModal, setShowModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [generatedVastTracker, setGeneratedVastTracker] = useState<
     string | null
   >(null);
+  const { data: platformsData, isLoading: isLoadingPlatforms } =
+    useGetPlatforms("video_vast");
+  const { data: trackerTypesData, isLoading: isLoadingTrackerTypes } =
+    useListTpTrackerTypes(packageName, "video_vast");
   const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([
     { type: "impression", url: "" },
     { type: "click", url: "" },
     { type: "complete", url: "" },
     { type: "first_quartile", url: "" },
     { type: "midpoint", url: "" },
-    { type: "click_through_tracker", url: "" }
+    { type: "click_through_tracker", url: "" },
   ]);
   const ref = useRef(null);
-  const params = useParams();
-  const packageName = params.package_name as string;
+  console.log("trackerTypesData", trackerTypesData);
 
   const initialFormValues: FormValues = {
     domain_name: "",
@@ -227,12 +231,16 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
     double_spotting_threshold: "",
   };
 
-  const handleUrlSubmit = async (values: FormValues, { resetForm }: { resetForm: () => void }) => {
+  const handleUrlSubmit = async (
+    values: FormValues,
+    { resetForm }: { resetForm: () => void }
+  ) => {
     try {
       if (!values.vast_wrapper_url && !values.vast_creative_url) {
         toast({
           title: "Error",
-          description: "Please provide either VAST wrapper URL or VAST creative URL",
+          description:
+            "Please provide either VAST wrapper URL or VAST creative URL",
           variant: "destructive",
         });
         return;
@@ -247,7 +255,10 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
         return;
       }
 
-      if (values.vast_creative_url && typeof values.vast_creative_url === 'string') {
+      if (
+        values.vast_creative_url &&
+        typeof values.vast_creative_url === "string"
+      ) {
         try {
           const metadata = await getVideoMetadata(values.vast_creative_url);
           values.vast_creative_metadata = {
@@ -277,7 +288,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
         title: "Success",
         description: "URL form submitted successfully",
       });
-      
+
       // Reset the form after successful submission
       // resetForm();
     } catch (error) {
@@ -405,17 +416,31 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                       onValueChange={(value: string) =>
                         setFieldValue("platform_name", value)
                       }
+                      disabled={isLoadingPlatforms}
                     >
                       <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
                         <SelectValue
-                          placeholder="Select Platform"
+                          placeholder={
+                            isLoadingPlatforms
+                              ? "Loading platforms..."
+                              : "Select Platform"
+                          }
                           className="text-[#9CA3AF]"
                         />
                       </SelectTrigger>
                       <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
-                        <SelectItem value="facebook">Facebook</SelectItem>
-                        <SelectItem value="google">Google</SelectItem>
-                        <SelectItem value="tiktok">TikTok</SelectItem>
+                        {isLoadingPlatforms ? (
+                          <div className="flex items-center justify-center p-4">
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            <span className="ml-2">Loading platforms...</span>
+                          </div>
+                        ) : (
+                          platformsData?.map((platform: any) => (
+                            <SelectItem key={platform} value={platform}>
+                              {platform}
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                     {errors.platform_name && touched.platform_name && (
@@ -749,35 +774,53 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                                 newTypes[index] = value;
                                 setFieldValue("tp_tracker_type", newTypes);
                               }}
+                              disabled={isLoadingTrackerTypes}
                             >
                               <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
                                 <SelectValue
-                                  placeholder="Select Tracker Name"
+                                  placeholder={
+                                    isLoadingTrackerTypes
+                                      ? "Loading tracker types..."
+                                      : "Select Tracker Name"
+                                  }
                                   className="text-[#9CA3AF]"
                                 />
                               </SelectTrigger>
                               <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
-                                {customTrackers
-                                  .filter(tracker => 
-                                    !values.tp_tracker_type.includes(tracker.type) || 
-                                    tracker.type === values.tp_tracker_type[index]
-                                  )
-                                  .map((tracker) => (
-                                    <SelectItem
-                                      key={tracker.type}
-                                      value={tracker.type}
-                                    >
-                                      {tracker.type}
-                                    </SelectItem>
-                                  ))}
+                                {isLoadingTrackerTypes ? (
+                                  <div className="flex items-center justify-center p-4">
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <span className="ml-2">
+                                      Loading tracker types...
+                                    </span>
+                                  </div>
+                                ) : (
+                                  trackerTypesData
+                                    ?.filter(
+                                      (trackerType: string) =>
+                                        trackerType !== "click_through_tracker" ||
+                                        !values.tp_tracker_type.includes("click_through_tracker") ||
+                                        trackerType === values.tp_tracker_type[index]
+                                    )
+                                    .map((trackerType: string) => (
+                                      <SelectItem
+                                        key={trackerType}
+                                        value={trackerType}
+                                      >
+                                        {trackerType}
+                                      </SelectItem>
+                                    ))
+                                )}
                               </SelectContent>
                             </Select>
-                            {errors.tp_tracker_type && (errors.tp_tracker_type as string[])[index] && touched.tp_tracker_type?.[index] && (
-                              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                {(errors.tp_tracker_type as string[])[index]}
-                              </div>
-                            )}
+                            {errors.tp_tracker_type &&
+                              (errors.tp_tracker_type as string[])[index] &&
+                              touched.tp_tracker_type?.[index] && (
+                                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {(errors.tp_tracker_type as string[])[index]}
+                                </div>
+                              )}
                           </div>
 
                           <div>
@@ -789,12 +832,14 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                               className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                               placeholder="Enter Tracker URL"
                             />
-                            {errors.tp_tracker_url && (errors.tp_tracker_url as string[])[index] && touched.tp_tracker_url?.[index] && (
-                              <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                <AlertCircle className="w-3 h-3" />
-                                {(errors.tp_tracker_url as string[])[index]}
-                              </div>
-                            )}
+                            {errors.tp_tracker_url &&
+                              (errors.tp_tracker_url as string[])[index] &&
+                              touched.tp_tracker_url?.[index] && (
+                                <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                                  <AlertCircle className="w-3 h-3" />
+                                  {(errors.tp_tracker_url as string[])[index]}
+                                </div>
+                              )}
                           </div>
 
                           <div className="pt-8">

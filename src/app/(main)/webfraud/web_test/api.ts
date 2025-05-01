@@ -2,7 +2,29 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import axios from "axios";
 import { Toast } from "./components/ToastHelper";
 
+const BASE_URL =
+  "https://oikgmuvt5b.execute-api.us-west-2.amazonaws.com/test/api/v1/";
 
+const api = axios.create({
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Add request interceptor to add auth token
+api.interceptors.request.use(
+  (config) => {
+    const idToken = sessionStorage.getItem("IDToken");
+    if (idToken) {
+      config.headers.Authorization = `${idToken}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 function parseJSON(response: Response) {
   return response.json();
@@ -36,8 +58,6 @@ const dummyCode = `<script>
     mf("mf_tracking_type", "pageviews"); 
 </script> `;
 
-const BASE_URL =
-  "https://hu5lf9ft08.execute-api.ap-south-1.amazonaws.com/api/v1/";
 // "config_dashboard/customers"
 // queryClient.js
 
@@ -45,19 +65,20 @@ const BASE_URL =
 
 const WEB_TEST_APIS = {
   async getPackages(): Promise<any> {
-    const data: any = await axios.get(BASE_URL + "config_dashboard/customers");
-    return data.data.data;
+    const data: any = await api.get("config_dashboard/list_packages");
+    return data.data;
   },
   async getTrackers({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
-    const data: any = await axios.get(
-      BASE_URL + `config_dashboard/trackers?package_name=${packageName}`
+    const data: any = await api.get(
+      `config_dashboard/list_trackers?package_name=${packageName}&limit=200&page=1`
     );
-    return data.data.data;
+    console.log("data.data.trackers", data.data.trackers);
+    return data.data.trackers;
   },
   async getNewTrackerSchema(tracker_type: string): Promise<any> {
-    let data: any = await axios.get(
-      BASE_URL + "config_dashboard/trackers/get_tracker_generation_schema"
+    let data: any = await api.get(
+      "config_dashboard/trackers/get_tracker_generation_schema"
     );
     data = data.data.data;
     const tracker_type_data = data.tracker_type[tracker_type];
@@ -68,10 +89,7 @@ const WEB_TEST_APIS = {
   },
   async createTracker(payload: any): Promise<any> {
     payload = flattenObject(payload);
-    let data: any = await axios.post(
-      BASE_URL + "config_dashboard/trackers/create",
-      payload
-    );
+    let data: any = await api.post("config_dashboard/trackers/create", payload);
     data = data.data.data;
     if (data.tracker_url) {
       return {
@@ -84,9 +102,7 @@ const WEB_TEST_APIS = {
     const { packageName, trackerId } = payload;
     console.log(trackerId);
     try {
-      await axios.delete(
-        BASE_URL + `config_dashboard/trackers/${trackerId}/delete`
-      );
+      await api.delete(`config_dashboard/trackers/${trackerId}/delete`);
       Toast.success({ description: "tracker deleted" });
     } catch (err) {
       console.log(err);
@@ -95,15 +111,15 @@ const WEB_TEST_APIS = {
   },
   async getTrackerConfig({ queryKey }: any): Promise<any> {
     const [_key, trackerId] = queryKey;
-    const data: any = await axios.get(
-      BASE_URL + `config_dashboard/trackers/${trackerId}/get_config`
+    const data: any = await api.get(
+      `config_dashboard/trackers/${trackerId}/get_config`
     );
     return data.data.data;
   },
   async updateTrackerConfig(payload: any): Promise<any> {
     const { trackerId, data: updatedConfig }: any = payload;
-    let data: any = await axios.patch(
-      BASE_URL + `config_dashboard/trackers/${trackerId}/set_config`,
+    let data: any = await api.patch(
+      `config_dashboard/trackers/${trackerId}/set_config`,
       updatedConfig
     );
     data = data.data.data;

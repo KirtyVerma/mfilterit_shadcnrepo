@@ -118,15 +118,8 @@ const AddYoutubeTracker = () => {
   const packageName =
     typeof params.package_name === "string" ? params.package_name : "";
   const { data: platformsData, isLoading: isLoadingPlatforms } =
-    useGetPlatforms(packageName, "video_youtube");
+    useGetPlatforms("video_youtube");
   const createYoutubeTracker = useCreateYoutubeTracker();
-
-  const platforms: Platform[] =
-    platformsData?.map((platform: PlatformData) => ({
-      value: platform.platform_name,
-      label: platform.platform_name,
-    })) || [];
-
   const initialValues = {
     platform_name: "",
     campaign_name: "",
@@ -190,12 +183,9 @@ const AddYoutubeTracker = () => {
                           <span className="ml-2">Loading platforms...</span>
                         </div>
                       ) : (
-                        platforms.map((platform: Platform) => (
-                          <SelectItem
-                            key={platform.value}
-                            value={platform.value}
-                          >
-                            {platform.label}
+                        platformsData?.map((platform: any) => (
+                          <SelectItem key={platform} value={platform}>
+                            {platform}
                           </SelectItem>
                         ))
                       )}
