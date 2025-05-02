@@ -38,7 +38,11 @@ interface FormValues {
   campaign_name: string;
   platform_name: string;
   adset: string;
+<<<<<<< HEAD
   tag_identifier: string;
+=======
+  tracker_name: string;
+>>>>>>> d1452b7 (Initial commit)
   ro_number: string;
   extra_param_1: string;
   extra_param_2: string;
@@ -75,7 +79,11 @@ const baseSchema = Yup.object().shape({
   campaign_name: Yup.string().required("Campaign name is required"),
   platform_name: Yup.string().required("Platform name is required"),
   adset: Yup.string().required("Adset is required"),
+<<<<<<< HEAD
   tag_identifier: Yup.string().required("Tag identifier is required"),
+=======
+  tracker_name: Yup.string().required("Tracker name is required"),
+>>>>>>> d1452b7 (Initial commit)
   ro_number: Yup.string(),
   capping_threshold: Yup.string().test(
     "capping_threshold",
@@ -208,11 +216,19 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
 
   const initialFormValues: FormValues = {
     domain_name: "",
+<<<<<<< HEAD
     tracker_type: "video_vast",
     campaign_name: "",
     platform_name: "",
     adset: "",
     tag_identifier: "",
+=======
+    tracker_type: "vast",
+    campaign_name: "",
+    platform_name: "",
+    adset: "",
+    tracker_name: "",
+>>>>>>> d1452b7 (Initial commit)
     ro_number: "",
     extra_param_1: "",
     extra_param_2: "",
@@ -267,7 +283,17 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
             creative_duration: metadata.duration,
           };
         } catch (error) {
+<<<<<<< HEAD
           console.error("Error fetching video metadata:", error);
+=======
+          
+          toast({
+            title: "Error",
+            description: "Invalid VAST creative URL",
+            variant: "destructive",
+          });
+          return;
+>>>>>>> d1452b7 (Initial commit)
         }
       }
 
@@ -512,6 +538,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                       </div>
                     </Label>
                     <Field
+<<<<<<< HEAD
                       name="tag_identifier"
                       className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
                       placeholder="Enter Tracker Name"
@@ -520,6 +547,16 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                       <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
                         <AlertCircle className="w-3 h-3" />
                         {errors.tag_identifier}
+=======
+                      name="tracker_name"
+                      className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md placeholder:text-[#9CA3AF] text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+                      placeholder="Enter Tracker Name"
+                    />
+                    {errors.tracker_name && touched.tracker_name && (
+                      <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3 h-3" />
+                        {errors.tracker_name}
+>>>>>>> d1452b7 (Initial commit)
                       </div>
                     )}
                   </div>

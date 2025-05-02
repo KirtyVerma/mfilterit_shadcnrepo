@@ -137,6 +137,10 @@ const APIS = {
       "config_dashboard/create_tracker",
       payload
     );
+<<<<<<< HEAD
+=======
+
+>>>>>>> d1452b7 (Initial commit)
     return data.data;
   },
   async create1x1Tracker(payload: OneXOneTrackerPayload): Promise<any> {

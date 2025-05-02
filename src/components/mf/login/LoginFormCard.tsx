@@ -28,7 +28,11 @@ const LoginFormCardContainer = () => {
     // Normal login
     else if (res.data?.auth_response?.AuthenticationResult?.IdToken) {
       //   TODO: Fetch menu redirect route
+<<<<<<< HEAD
       router.push("/webfraud/event-visit/dashboard");
+=======
+      router.push("/webfraud/Dashboard/overall-summary");
+>>>>>>> d1452b7 (Initial commit)
       sessionStorage.setItem(
         "IdToken",
         res.data?.auth_response?.AuthenticationResult?.IdToken,
@@ -46,7 +50,11 @@ const LoginFormCardContainer = () => {
     const IdToken =
       d?.data?.auth_response?.AuthenticationResult?.IdToken;
     if (IdToken) {
+<<<<<<< HEAD
       router.push("/webfraud/event-visit/dashboard");
+=======
+      router.push("/webfraud/Dashboard/overall-summary");
+>>>>>>> d1452b7 (Initial commit)
       sessionStorage.setItem("AccessToken", IdToken);
       sessionStorage.setItem(
         "IDToken",

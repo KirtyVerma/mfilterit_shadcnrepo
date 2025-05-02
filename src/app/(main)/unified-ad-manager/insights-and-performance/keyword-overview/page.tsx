@@ -2,7 +2,11 @@
 
 import React, { useState, useCallback } from "react";
 import { Filter } from "@/components/mf/Filters";
+<<<<<<< HEAD
 import ResizableTable, { Column } from "@/components/mf/TableComponent";
+=======
+import ResizableTable, { Column } from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -177,7 +181,11 @@ const KeywordOverviewPage: React.FC = () => {
     item: Record<string, string | number>,
     value: string,
   ) => {
+<<<<<<< HEAD
     console.log(item, value);
+=======
+    // console.log(item, value);
+>>>>>>> d1452b7 (Initial commit)
     const b = {
       keyword_list: [
         {

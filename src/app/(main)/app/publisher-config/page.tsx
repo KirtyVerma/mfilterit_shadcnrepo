@@ -1,6 +1,10 @@
 "use client";
 import { MFSingleSelect } from "@/components/mf";
+<<<<<<< HEAD
 import ResizableTable from "@/components/mf/TableComponent";
+=======
+import ResizableTable from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {

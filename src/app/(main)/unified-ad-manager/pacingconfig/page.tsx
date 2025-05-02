@@ -641,7 +641,11 @@
 // export default PacingConfig;
 "use client";
 import { useEffect } from "react";
+<<<<<<< HEAD
 import ResizableTable, { Column } from "@/components/mf/TableComponent";
+=======
+import ResizableTable, { Column } from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -830,7 +834,11 @@ useEffect(()=>{
     
   refetchCampaigns()}
 },[query])
+<<<<<<< HEAD
 console.log(startDate,endDate,"dates")
+=======
+// console.log(startDate,endDate,"dates")
+>>>>>>> d1452b7 (Initial commit)
   useEffect(()=>{
     axios
     .post(
@@ -874,7 +882,11 @@ console.log(startDate,endDate,"dates")
       }
     )
     .then((respo) => {
+<<<<<<< HEAD
        console.log(respo.data,"22222");
+=======
+      //  console.log(respo.data,"22222");
+>>>>>>> d1452b7 (Initial commit)
       if (respo.data.status === "OK") {
         setTableData(respo.data.data)
   //       toast.success("Data is submitted successfully");
@@ -909,7 +921,11 @@ console.log(startDate,endDate,"dates")
       }
     )
     .then((respo) => {
+<<<<<<< HEAD
        console.log(respo.data,"22222");
+=======
+      //  console.log(respo.data,"22222");
+>>>>>>> d1452b7 (Initial commit)
       if (respo.data.status === "OK") {
         setcampaignList(respo.data.data)
   //       toast.success("Data is submitted successfully");
@@ -935,7 +951,11 @@ console.log(startDate,endDate,"dates")
     },
   });
 
+<<<<<<< HEAD
 console.log(campaignList,"list")
+=======
+// console.log(campaignList,"list")
+>>>>>>> d1452b7 (Initial commit)
   const [tableData, setTableData] = useState<any[]>([]);
 
   // Handle hour changes (start_time / end_time)
@@ -981,7 +1001,11 @@ console.log(campaignList,"list")
   // const hours = Array.from({ length: 24 }, (_, i) => (i < 10 ? `0${i}` : `${i}`));
   const hours = Array.from({ length: 24 }, (_, i) => `${i < 10 ? `0${i}` : i}:00`);
 
+<<<<<<< HEAD
 console.log(selectedCampaign,"qq")
+=======
+// console.log(selectedCampaign,"qq")
+>>>>>>> d1452b7 (Initial commit)
   // const handleDateChange = (newDateRange: DateRange | undefined) => {
   //   setSelectedDateRange(newDateRange);
   //   if (newDateRange?.from && newDateRange?.to) {
@@ -1009,7 +1033,11 @@ const _hndInput = () => {
       }
     )
     .then((respo) => {
+<<<<<<< HEAD
        console.log(respo.data,"22222");
+=======
+      //  console.log(respo.data,"22222");
+>>>>>>> d1452b7 (Initial commit)
       if (respo.data.status === "OK") {
         setSelectedProfile(respo.data?.data?.profile_name)
         setProfileList(respo.data?.data?.profile_name_list
@@ -1047,12 +1075,20 @@ const _hndInput = () => {
       setIsWeekend(checked ? "weekend" : "weekday");
     };
   
+<<<<<<< HEAD
 console.log(selectedProfile,"pn")
+=======
+// console.log(selectedProfile,"pn")
+>>>>>>> d1452b7 (Initial commit)
 
 
 
 
+<<<<<<< HEAD
 console.log(tableData,"tabledata")
+=======
+// console.log(tableData,"tabledata")
+>>>>>>> d1452b7 (Initial commit)
 
 
 

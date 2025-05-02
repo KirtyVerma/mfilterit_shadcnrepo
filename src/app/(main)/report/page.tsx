@@ -7,7 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+<<<<<<< HEAD
 import ResizableTable from "@/components/mf/TableComponent";
+=======
+import ResizableTable from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import { Filter } from "@/components/mf/Filters";
 import { CiCirclePlus, CiCircleMinus } from "react-icons/ci";
 

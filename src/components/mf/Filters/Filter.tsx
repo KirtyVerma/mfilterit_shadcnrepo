@@ -1,6 +1,17 @@
 "use client";
 
+<<<<<<< HEAD
 import React, { useReducer, useState, ReactNode, useEffect } from "react";
+=======
+import React, {
+  useReducer,
+  useState,
+  ReactNode,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
+>>>>>>> d1452b7 (Initial commit)
 import { FilterPill, FilterState } from "./FilterPill";
 import { session } from "@/lib/utils";
 import { onSubmit } from "./types";
@@ -10,6 +21,12 @@ interface FilterProps {
   component?: ReactNode;
   filter: { [key in string]: FilterState };
   onChange: (d: State) => void;
+<<<<<<< HEAD
+=======
+  isSearchable?: boolean;
+  onSearch?: (id: string, query: string) => void;
+  itemsPerPage?: number;
+>>>>>>> d1452b7 (Initial commit)
 }
 
 export function Filter({
@@ -17,6 +34,7 @@ export function Filter({
   component,
   filter,
   onChange,
+<<<<<<< HEAD
 }: FilterProps) {
   const [state, Dispatch] = useFilterReducer(filter);
 
@@ -44,11 +62,46 @@ export function Filter({
     <>
       {Object.entries(state ?? {}).map(([k, v]) => {
         const filterState: FilterState & { loading?: boolean } = v;
+=======
+  isSearchable = false,
+  onSearch,
+  itemsPerPage = 5,
+}: FilterProps) {
+  const handleSubmit = useCallback((id: string, data: FilterState) => {
+    const newState = {
+      ...filter,
+      [id]: {
+        ...data,
+        filters: data.filters.map(f => ({
+          ...f,
+          checked: f.checked ?? true
+        }))
+      }
+    };
+    
+    console.log("Submitting filter change:", newState);
+    onChange(newState);
+    //console.log("📢 onChange triggered with:", newState);
+  }, [filter, onChange]);
+
+  useEffect(() => {
+    //console.log("Filter received:", filter);
+  }, [filter]);
+
+  const loadingRef = useRef<HTMLDivElement>(null);
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {Object.entries(filter ?? {}).map(([k, v]) => {
+        const filterState: FilterState & { loading?: boolean } = v;
+
+>>>>>>> d1452b7 (Initial commit)
         return (
           <FilterPill
             key={k}
             id={k}
             title={k}
+<<<<<<< HEAD
             filters={filterState.filters}
             onSubmit={handleSubmit}
             onSearch={console.log}
@@ -58,6 +111,21 @@ export function Filter({
       })}
       {/* ... rest of the component remains the same ... */}
     </>
+=======
+            filters={filterState.filters || []}
+            onSubmit={handleSubmit}
+            onSearch={onSearch}
+            loading={filterState.loading ?? false}
+            isSelectAll={filterState.is_select_all}
+            totalItems={filterState.filters?.length || 0}
+            itemsPerPage={itemsPerPage}
+            isSearchable={true}
+          />
+        );
+      })}
+      <div ref={loadingRef} className="h-10" />
+    </div>
+>>>>>>> d1452b7 (Initial commit)
   );
 }
 
@@ -83,7 +151,10 @@ function Set(id: string, p: FilterState): Action {
 }
 
 function Reducer(state: State, action: Action): State {
+<<<<<<< HEAD
   // console.log("Filter Reducer:", action.type, action.payload);
+=======
+>>>>>>> d1452b7 (Initial commit)
   switch (action.type) {
     case ActionType.SET: {
       if (!action.payload) return state;

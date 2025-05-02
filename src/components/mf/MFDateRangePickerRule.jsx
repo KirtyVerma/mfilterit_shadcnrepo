@@ -73,7 +73,11 @@ export function MFDateRangePicker({
               !date && "text-muted-foreground"
             )}
           >
+<<<<<<< HEAD
             <CalendarIcon className="mr-2 h-4 w-4" />
+=======
+            <CalendarIcon className="mr-2 h-4 w-4 text-secondary" />
+>>>>>>> d1452b7 (Initial commit)
             {date?.from ? (
               date.to ? (
                 <>

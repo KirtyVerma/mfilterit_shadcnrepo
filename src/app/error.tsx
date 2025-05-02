@@ -13,6 +13,7 @@ export default function Error({
   reset: () => void;
 }) {
   const router = useRouter();
+<<<<<<< HEAD
   useEffect(() => {
     switch (true) {
       case error instanceof UnauthorizedError:
@@ -20,6 +21,21 @@ export default function Error({
         break;
       default:
         console.log(error.message);
+=======
+  
+  useEffect(() => {
+    switch (true) {
+      case error instanceof UnauthorizedError:
+        // Store current path before redirect
+        const currentPath = window.location.pathname;
+        if (currentPath !== '/') {
+          sessionStorage.setItem('redirectPath', currentPath);
+        }
+        sessionStorage.clear();
+        window.location.href = '/';
+        break;
+      default:
+>>>>>>> d1452b7 (Initial commit)
         console.error(error);
     }
   }, [error]);
@@ -36,4 +52,8 @@ export default function Error({
       </Button>
     </div>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> d1452b7 (Initial commit)

@@ -111,6 +111,10 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed";
       nameKey?: string;
       labelKey?: string;
+<<<<<<< HEAD
+=======
+      isPercentage?: boolean; // Add this prop
+>>>>>>> d1452b7 (Initial commit)
     }
 >(
   (
@@ -128,6 +132,10 @@ const ChartTooltipContent = React.forwardRef<
       color,
       nameKey,
       labelKey,
+<<<<<<< HEAD
+=======
+      isPercentage = false, // Default to false
+>>>>>>> d1452b7 (Initial commit)
     },
     ref,
   ) => {
@@ -239,6 +247,7 @@ const ChartTooltipContent = React.forwardRef<
                         </span>
                       </div>
                       {item.value !== undefined && (
+<<<<<<< HEAD
         <span className="font-mono font-medium  text-small-font tabular-nums text-foreground">
           {typeof item.value === 'number' ? (
             item.value >= 0 && item.value <= 100 ? (
@@ -246,6 +255,14 @@ const ChartTooltipContent = React.forwardRef<
             ) : (
               item.value.toLocaleString()
             )
+=======
+        <span className="font-mono font-medium text-small-font tabular-nums text-foreground">
+          {typeof item.value === 'number' ? (
+            isPercentage ? // Use the isPercentage prop instead
+              `${item.value.toFixed(2)}%`
+            : 
+              item.value.toLocaleString()
+>>>>>>> d1452b7 (Initial commit)
           ) : (
             "-"
           )}

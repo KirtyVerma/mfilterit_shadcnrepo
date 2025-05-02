@@ -1,7 +1,11 @@
 "use client";
 
 import { Filter, FilterState } from "@/components/mf/Filters";
+<<<<<<< HEAD
 import ResizableTable, { Column } from "@/components/mf/TableComponent";
+=======
+import ResizableTable, { Column } from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect, useCallback } from "react";
@@ -223,7 +227,11 @@ getCampaign()
         }
       )
       .then((respo) => {
+<<<<<<< HEAD
         console.log(respo.data, "adgroup");
+=======
+        // console.log(respo.data, "adgroup");
+>>>>>>> d1452b7 (Initial commit)
         if (respo.data.status === "OK") {
           getCampaign()
           // toast.success("Data is submitted successfully");
@@ -266,12 +274,20 @@ getCampaign()
         return item;
       });
   
+<<<<<<< HEAD
       console.log({ row, updatedData }, "Updated Campaign Data");
+=======
+      // console.log({ row, updatedData }, "Updated Campaign Data");
+>>>>>>> d1452b7 (Initial commit)
       return updatedData;
     });
   };
   
+<<<<<<< HEAD
     console.log({campaignData},"row")
+=======
+    // console.log({campaignData},"row")
+>>>>>>> d1452b7 (Initial commit)
   return (
     <div className="container relative bg-card">
       <ResizableTable

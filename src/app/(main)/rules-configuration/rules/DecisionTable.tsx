@@ -280,7 +280,11 @@ const ConditionBuilder = ({ open, setT, ruleType }) => {
       };
 
 
+<<<<<<< HEAD
       console.log(groups,"----hello groups is needed");
+=======
+      // console.log(groups,"----hello groups is needed");
+>>>>>>> d1452b7 (Initial commit)
       
     
       // Render groups and conditions

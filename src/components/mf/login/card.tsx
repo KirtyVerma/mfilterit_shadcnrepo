@@ -21,11 +21,20 @@ const FormCard = () => {
 
   const onSuccess = (res: any) => {
     // MFA login
+<<<<<<< HEAD
     if (res?.data?.challenge_name === "SOFTWARE_TOKEN_MFA") setFormType("otp");
     // Normal login
     else if (res.data?.auth_response?.AuthenticationResult?.AccessToken) {
       //   TODO: Fetch menu redirect route
       router.push("/webfraud/event-visit/dashboard");
+=======
+    if (res?.data?.challenge_name === "SOFTWARE_TOKEN_MFA") {
+      setFormType("otp");
+    }
+    // Normal login
+    else if (res.data?.auth_response?.AuthenticationResult?.AccessToken) {
+      // Store tokens
+>>>>>>> d1452b7 (Initial commit)
       sessionStorage.setItem(
         "AccessToken",
         res?.data?.auth_response?.AuthenticationResult?.AccessToken,
@@ -34,6 +43,34 @@ const FormCard = () => {
         "IDToken",
         res?.data?.auth_response?.AuthenticationResult?.IdToken,
       );
+<<<<<<< HEAD
+=======
+
+      // Check for stored redirect path
+      const redirectPath = sessionStorage.getItem('redirectPath');
+      sessionStorage.removeItem('redirectPath'); // Clear stored path
+
+      // Valid dashboard paths
+      const validDashboardPaths = [
+        "/webfraud/Dashboard/overall-summary",
+        // "/webfraud/Dashboard/analysis-insights",
+        // "/webfraud/Dashboard/traffic-insights",
+        // "/webfraud/Dashboard/actionable-insights",
+        // "/webfraud/Configuration/WhiteListing-IVT-Category",
+        // "/webfraud/Configuration/Real-Time-Protection",
+        // "/webfraud/Configuration/Call-Recommendation",
+        // "/webfraud/Download-Ivt-Report/Campaign-wise",
+        // "/webfraud/Download-Ivt-Report/LandingPage-wise",
+      ];
+
+      // If redirectPath exists and is a valid dashboard path, use it
+      // Otherwise default to overall-summary
+      const targetPath = redirectPath && validDashboardPaths.includes(redirectPath)
+        ? redirectPath
+        : "/webfraud/Dashboard/overall-summary";
+
+      router.push(targetPath);
+>>>>>>> d1452b7 (Initial commit)
     }
   };
 
@@ -43,7 +80,11 @@ const FormCard = () => {
     const AccessToken =
       d?.data?.auth_response?.AuthenticationResult?.AccessToken;
     if (AccessToken) {
+<<<<<<< HEAD
       router.push("/webfraud/event-visit/dashboard");
+=======
+      router.push("/webfraud/Dashboard/overall-summary");
+>>>>>>> d1452b7 (Initial commit)
       sessionStorage.setItem("AccessToken", AccessToken);
       sessionStorage.setItem(
         "IDToken",
@@ -131,4 +172,8 @@ const LoginFormCard: React.FC<{
       />
     </>
   );
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> d1452b7 (Initial commit)

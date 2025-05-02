@@ -14,6 +14,7 @@ type MenuItem = {
 };
 
 const menu: MenuItem[] = [
+<<<<<<< HEAD
   {
     title: "Web Fraud",
     icon: <Globe size={18} />,
@@ -48,14 +49,150 @@ const menu: MenuItem[] = [
         icon: "",
         subMenu: [],
         route: "/webfraud/web_test/packages",
+=======
+    {
+      title: "Web Fraud",
+      icon: <Globe size={18} />,
+      subMenu: [
+        {
+          title: "Dashboard",
+          icon: "",
+          subMenu: [
+            {
+              title: "Overall-Summary",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Dashboard/overall-summary",
+            },
+            {
+              title: "Analysis Insights",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Dashboard/analysis-insights",
+            },
+            {
+              title: "Traffic Insights",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Dashboard/traffic-insights",
+            },
+            {
+              title: "Actionable Insights",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Dashboard/actionable-insights",
+            },
+          ],
+        },
+        {
+          title: "Configuration",
+          icon: "",
+          subMenu: [
+            {
+              title: "WhiteListing IVT Category",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Configuration/WhiteListing-IVT-Category",
+            },
+            {
+              title: "Real Time Protection",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Configuration/Real-Time-Protection",
+            },
+            {
+              title: "Call Recommendation",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Configuration/Call-Recommendation",
+            },
+            {
+              title: "AD Manager",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Configuration/Ad-manager-apiAcsess",
+            }
+          ],
+        },
+            {
+              title: "Download IVT Report",
+              icon: "",
+              subMenu: [
+            {
+              title: "Campaign Wise",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Download-Ivt-Report/Campaign-wise",
+            },
+            {
+              title: "Landing Page Wise",
+              icon: "",
+              subMenu: [],
+              route:
+                "/webfraud/Download-Ivt-Report/LandingPage-wise",
+            },
+        ]
+>>>>>>> d1452b7 (Initial commit)
       },
     ],
   },
   {
+<<<<<<< HEAD
     title: "Sample Dashboard",
     icon: "",
     subMenu: [],
     route: "/webfraud/event-visit/simple-dashboard",
+=======
+    title: "Reporting Tool",
+    icon: "",
+    subMenu: [
+      {
+        title: "Report",
+        icon: "",
+        subMenu: [],
+        route:
+          "/webfraud/ReportingTool/Report",
+      },
+      {
+        title: "Mail",
+        icon: "",
+        subMenu: [],
+        route:
+          "/webfraud/ReportingTool/Mail",
+      },
+     
+    //   {
+    //     title: "Ad Group Overview",
+    //     icon: "",
+    //     subMenu: [],
+    //     route:
+    //       "/unified-ad-manager/insights-and-performance/ad-group-overview",
+    //   },
+    //   {
+    //     title: "Keyword Overview",
+    //     icon: "",
+    //     subMenu: [],
+    //     route:
+    //       "/unified-ad-manager/insights-and-performance/keyword-overview",
+    //   },
+    //   {
+    //     title: "Product Overview",
+    //     icon: "",
+    //     subMenu: [],
+    //     route:
+    //       "/unified-ad-manager/insights-and-performance/product-overview",
+    //   },
+    ],
+>>>>>>> d1452b7 (Initial commit)
   },
 ];
 
@@ -64,11 +201,16 @@ function MFWebFraudAsideMenu({
   onHover = (e: boolean) => console.log(e),
   theme = "light", // Default theme
 }) {
+<<<<<<< HEAD
+=======
+
+>>>>>>> d1452b7 (Initial commit)
   const router = useRouter();
 
   return (
     <div
       className={clsx(
+<<<<<<< HEAD
         "z-10 flex h-full flex-col bg-clip-border text-gray-300 shadow-xl transition-all",
         {
           "bg-gray-900": theme === "dark",
@@ -77,6 +219,16 @@ function MFWebFraudAsideMenu({
             isExpanded,
           "w-0 max-w-[4rem] md:w-full md:p-1": !isExpanded,
         }
+=======
+        "z-[100] flex h-full flex-col bg-clip-border text-gray-300 shadow-xl transition-all",
+        {
+          "bg-gray-900": theme === "dark",
+          "bg-secondary": theme === "light",
+          "fixed bottom-0 left-0 top-14 w-[14rem] max-w-[14rem] p-2 md:relative md:top-auto": // Changed absolute to fixed
+            isExpanded,
+          "w-0 max-w-[4rem] md:w-full md:p-1": !isExpanded,
+        },
+>>>>>>> d1452b7 (Initial commit)
       )}
       onMouseEnter={() => onHover(true)}
       onMouseLeave={() => onHover(false)}
@@ -144,7 +296,11 @@ function MenuItem({
               "bg-gray-700 hover:bg-primary": theme === "dark",
               "bg-secondary hover:bg-primary": theme === "light",
             },
+<<<<<<< HEAD
             { "bg-primary": pathName === route }
+=======
+            { "bg-primary": pathName === route },
+>>>>>>> d1452b7 (Initial commit)
           )}
           onClick={() => {
             if (route) router.push(route);

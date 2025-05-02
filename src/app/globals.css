@@ -31,6 +31,7 @@ body {
       border-radius: 10px;
     }
   }
+<<<<<<< HEAD
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
@@ -39,6 +40,8 @@ body {
     -ms-overflow-style: none; /* IE and Edge */
     scrollbar-width: none; /* Firefox */
   }
+=======
+>>>>>>> d1452b7 (Initial commit)
 }
 
 @layer base {
@@ -70,7 +73,11 @@ body {
     --radius: 0.5rem;
   }
   .dark {
+<<<<<<< HEAD
     --background: 215.3, 25%, 26.7%;
+=======
+    --background: 215.3,25%,26.7%;
+>>>>>>> d1452b7 (Initial commit)
     --foreground: 0 0% 98%;
     --card: 221, 39%, 11%;
     --card-foreground: 0 0% 98%;

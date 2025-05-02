@@ -1,6 +1,10 @@
 "use client";
 import { useEffect } from "react";
+<<<<<<< HEAD
 import ResizableTable, { Column } from "@/components/mf/TableComponent";
+=======
+import ResizableTable, { Column } from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -214,7 +218,11 @@ interface SKUData {
 
   const hours = Array.from({ length: 24 }, (_, i) => (i < 10 ? `0${i}` : `${i}`));
 
+<<<<<<< HEAD
 console.log(selectedCampaign,"qq")
+=======
+// console.log(selectedCampaign,"qq")
+>>>>>>> d1452b7 (Initial commit)
   const handleDateChange = (newDateRange: DateRange | undefined) => {
     setSelectedDateRange(newDateRange);
     if (newDateRange?.from && newDateRange?.to) {

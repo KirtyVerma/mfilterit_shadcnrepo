@@ -25,7 +25,11 @@ type MFRulesTopBarType = {
 
 const enable: string[] = [
   "app/dashboard/install",
+<<<<<<< HEAD
   "webfraud/event-visit/dashboard",
+=======
+  "webfraud/Dashboard/overall-summary",
+>>>>>>> d1452b7 (Initial commit)
 ];
 
 function MFRulesTopBar({ isExpanded, onToggle }: MFRulesTopBarType) {

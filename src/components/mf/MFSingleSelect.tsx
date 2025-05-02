@@ -2,13 +2,17 @@ import React from "react";
 import {
   Select,
   SelectContent,
+<<<<<<< HEAD
   SelectGroup,
+=======
+>>>>>>> d1452b7 (Initial commit)
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
+<<<<<<< HEAD
 type MFSingleSelectProps = {
   className?: string;
   title: string;
@@ -44,5 +48,45 @@ export function MFSingleSelect({
         </SelectGroup>
       </SelectContent>
     </Select>
+=======
+interface Item {
+  title: string;
+  value: string;
+}
+
+interface MFSingleSelectProps {
+  items: Item[];
+  placeholder?: string;
+  title?: string;
+  className?: string;
+  value?: string;
+  onValueChange?: (value: string) => void;
+}
+
+export function MFSingleSelect({
+  items,
+  placeholder,
+  title,
+  className,
+  value,
+  onValueChange,
+}: MFSingleSelectProps) {
+  return (
+    <div className="flex flex-col gap-1">
+      {/* {title && <p className="text-body">{title}</p>} */}
+      <Select value={value} onValueChange={onValueChange}>
+        <SelectTrigger className={className}>
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {items.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.title}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+>>>>>>> d1452b7 (Initial commit)
   );
 }

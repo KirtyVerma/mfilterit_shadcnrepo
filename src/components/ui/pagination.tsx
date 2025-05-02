@@ -48,6 +48,7 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   return (
+<<<<<<< HEAD
     <div className="flex items-center space-x-2">
       <Button
         variant="outline"
@@ -56,6 +57,17 @@ const Pagination: React.FC<PaginationProps> = ({
         disabled={currentPage === 1}
       >
         <ChevronLeft className="h-4 w-4" />
+=======
+    <div className="flex items-center  flex-wrap space-x-2 ">
+      <Button
+        variant="outline"
+        size="xs"
+        className="text-small-font"
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+      >
+        <ChevronLeft className="h-2 w-2" />
+>>>>>>> d1452b7 (Initial commit)
       </Button>
 
       {getPageNumbers().map((page, index) => (
@@ -65,7 +77,12 @@ const Pagination: React.FC<PaginationProps> = ({
           ) : (
             <Button
               variant={currentPage === page ? "default" : "outline"}
+<<<<<<< HEAD
               size="sm"
+=======
+              size="xs"
+              className="text-small-font"
+>>>>>>> d1452b7 (Initial commit)
               onClick={() => onPageChange(page as number)}
             >
               {page}
@@ -76,11 +93,20 @@ const Pagination: React.FC<PaginationProps> = ({
 
       <Button
         variant="outline"
+<<<<<<< HEAD
         size="sm"
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
       >
         <ChevronRight className="h-4 w-4" />
+=======
+        size="xs"
+        className="text-small-font"
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+      >
+        <ChevronRight className="h-2 w-2" />
+>>>>>>> d1452b7 (Initial commit)
       </Button>
     </div>
   );

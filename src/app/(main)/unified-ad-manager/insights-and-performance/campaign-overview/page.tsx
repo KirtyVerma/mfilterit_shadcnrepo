@@ -1,7 +1,11 @@
 "use client";
 
 import { Filter, FilterState } from "@/components/mf/Filters";
+<<<<<<< HEAD
 import ResizableTable, { Column } from "@/components/mf/TableComponent";
+=======
+import ResizableTable, { Column } from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -100,7 +104,11 @@ const CampaignOverviewPage: React.FC = () => {
     status: ["all"],
   });
 
+<<<<<<< HEAD
   console.log(query , "asdasdasdad");
+=======
+  // console.log(query , "asdasdasdad");
+>>>>>>> d1452b7 (Initial commit)
   
   const [selected, setSelected] = useState<Record<string, string | number>[]>(
     [],
@@ -272,7 +280,11 @@ const CampaignOverviewPage: React.FC = () => {
     ],
   );
 
+<<<<<<< HEAD
   console.log(CampaignNameFilterData?.data , "filter----------------------");
+=======
+  // console.log(CampaignNameFilterData?.data , "filter----------------------");
+>>>>>>> d1452b7 (Initial commit)
   
   const updateBudgetMutation = useMutation<any, any, AxiosRequestConfig>({
     mutationFn: (config) => axios(config),

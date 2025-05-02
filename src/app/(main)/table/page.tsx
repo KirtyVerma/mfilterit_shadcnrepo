@@ -1,6 +1,10 @@
 "use client";
 import React from "react";
+<<<<<<< HEAD
 import ResizableTable from "@/components/mf/TableComponent";
+=======
+import ResizableTable from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 
 export default function Table() {
   const columns = [

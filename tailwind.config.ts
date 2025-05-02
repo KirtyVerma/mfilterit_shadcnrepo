@@ -14,7 +14,11 @@ const config: Config = {
         "sub-header": "1rem",
         body: "0.875rem",
         "small-font":"0.600rem",
+<<<<<<< HEAD
         "tiny-font":"0.500rem",
+=======
+        "tiny-font":"0.300rem",
+>>>>>>> d1452b7 (Initial commit)
       },
       colors: {
         background: "hsl(var(--background))",

@@ -1,7 +1,11 @@
 "use client";
 
 import { Filter } from "@/components/mf/Filters";
+<<<<<<< HEAD
 import ResizableTable, { Column } from "@/components/mf/TableComponent";
+=======
+import ResizableTable, { Column } from "@/components/mf/TableComponent1";
+>>>>>>> d1452b7 (Initial commit)
 import React, { useState, useCallback } from "react";
 import { BulkActionButton, BulkActions } from "../components/BulkActionButton";
 import Endpoint from "@/common/endpoint";
