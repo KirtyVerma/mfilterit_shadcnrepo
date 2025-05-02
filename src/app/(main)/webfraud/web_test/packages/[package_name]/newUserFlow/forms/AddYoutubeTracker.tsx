@@ -22,7 +22,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Loader2, Copy } from "lucide-react";
 import * as Yup from "yup";
 import { Formik, Form, Field } from "formik";
-import { useGetPlatforms, useCreateYoutubeTracker } from "../api";
+import { useGetPlatforms } from "../api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
@@ -119,7 +119,7 @@ const AddYoutubeTracker = () => {
     typeof params.package_name === "string" ? params.package_name : "";
   const { data: platformsData, isLoading: isLoadingPlatforms } =
     useGetPlatforms("video_youtube");
-  const createYoutubeTracker = useCreateYoutubeTracker();
+  // const createYoutubeTracker = useCreateYoutubeTracker();
   const initialValues = {
     platform_name: "",
     campaign_name: "",
@@ -138,8 +138,8 @@ const AddYoutubeTracker = () => {
         package_name: packageName,
       };
 
-      const response = await createYoutubeTracker.mutateAsync(payload);
-      setTrackerUrl(response.tracker_url);
+      // const response = await createYoutubeTracker.mutateAsync(payload);
+      // setTrackerUrl(response.tracker_url);
     } catch (error) {
       console.error("Failed to create tracker:", error);
     } finally {

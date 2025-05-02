@@ -14,7 +14,7 @@ import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { useParams } from "next/navigation";
 import { Loader2, AlertCircle, CheckCircle2, Copy } from "lucide-react";
-import { useGetPlatforms, useCreate1x1Tracker } from "../api";
+import { useGetPlatforms} from "../api";
 
 interface Platform {
 	value: string;
@@ -55,13 +55,9 @@ const Add1x1Tracker = () => {
 	const params = useParams();
 	const packageName = params.package_name as string;
 
-	const { data: platformsData = [], isLoading: isLoadingPlatforms } = useGetPlatforms(packageName, "video_1x1");
-	const create1x1Tracker = useCreate1x1Tracker();
+	const { data: platformsData = [], isLoading: isLoadingPlatforms } = useGetPlatforms( "video_1x1");
+	// const create1x1Tracker = useCreate1x1Tracker();
 
-	const platforms: Platform[] = platformsData.map((data: any) => ({
-		value: data.platform_name,
-		label: data.platform_name,
-	}));
 
 	const [trackerLoadingState, setTrackerLoadingState] = useState<TrackerLoadingState>({
 		firstQuartile: false,
@@ -158,8 +154,8 @@ const Add1x1Tracker = () => {
 				email: localStorage.getItem("email") || "",
 			};
 
-			const response = await create1x1Tracker.mutateAsync(payload);
-			set_1x1_imp_tracker(response.tracker_url);
+			// const response = await create1x1Tracker.mutateAsync(payload);
+			// set_1x1_imp_tracker(response.tracker_url);
 		} catch (error) {
 			console.error("Error creating tracker:", error);
 		}
@@ -200,7 +196,7 @@ const Add1x1Tracker = () => {
 						email: localStorage.getItem("email") || "",
 					};
 
-					const response = await create1x1Tracker.mutateAsync(payload);
+					// const response = await create1x1Tracker.mutateAsync(payload);
 					const index = updatedTrackers.findIndex(t => t.tracker === tracker.tracker);
 					if (index !== -1) {
 						updatedTrackers[index].value = response.tracker_url;
@@ -243,9 +239,9 @@ const Add1x1Tracker = () => {
 											{isLoadingPlatforms && <Loader2 className="h-4 w-4 animate-spin" />}
 										</SelectTrigger>
 										<SelectContent position="popper">
-											{platforms.map((platform) => (
-												<SelectItem key={platform.value} value={platform.value}>
-													{platform.label}
+											{platformsData.map((platform:any) => (
+												<SelectItem key={platform} value={platform}>
+													{platform}
 												</SelectItem>
 											))}
 										</SelectContent>

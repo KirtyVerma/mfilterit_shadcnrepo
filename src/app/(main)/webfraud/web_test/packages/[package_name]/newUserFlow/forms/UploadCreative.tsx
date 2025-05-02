@@ -5,17 +5,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { Loader2, AlertCircle, CheckCircle2, Copy, Upload, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Copy,
+  Upload,
+  Trash2,
+} from "lucide-react";
 import axios from "axios";
+import { useParams } from "next/navigation";
+import { APIS, useUploadCreative, WEB_TEST_APIS_BASE_URL } from "../api";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 interface FormValues {
   creativeName: string;
   creativeUrl: string;
-  height: string;
-  width: string;
-  creativeDuration?: string;
+  height: number;
+  width: number;
+  creativeDuration?: number;
   files: FileMetadata[];
   creativeType: "image" | "video";
 }
@@ -31,15 +40,16 @@ interface FileMetadata {
 
 interface UploadCreativeProps {
   handleNext: (status: string) => void;
-  acceptType?: "image" | "video" | "both";
+  acceptType: "image" | "video";
+  callBack?: () => void;
 }
 
 const initialValues: FormValues = {
-    creativeName: "",
-    creativeUrl: "",
-  height: "",
-  width: "",
-  creativeDuration: "",
+  creativeName: "",
+  creativeUrl: "",
+  height: 0,
+  width: 0,
+  creativeDuration: 0,
   files: [],
   creativeType: "image",
 };
@@ -65,7 +75,8 @@ const validationSchema = Yup.object().shape({
     )
     .when("files", {
       is: (files: FileMetadata[] | undefined) => !files || files.length === 0,
-      then: (schema) => schema.required("Creative URL is required when no file is uploaded"),
+      then: (schema) =>
+        schema.required("Creative URL is required when no file is uploaded"),
     }),
   height: Yup.number()
     .nullable()
@@ -80,9 +91,10 @@ const validationSchema = Yup.object().shape({
     .transform((value) => (value === "" ? null : value))
     .when("creativeType", {
       is: "video",
-      then: (schema) => schema
-        .required("Duration is required for video creatives")
-        .max(300, "Duration must be less than or equal to 300 seconds"),
+      then: (schema) =>
+        schema
+          .required("Duration is required for video creatives")
+          .max(300, "Duration must be less than or equal to 300 seconds"),
     })
     .positive("Duration must be positive"),
   files: Yup.array()
@@ -105,14 +117,14 @@ const validationSchema = Yup.object().shape({
   creativeType: Yup.string().oneOf(["image", "video"]).required(),
 });
 
-const UploadCreative = ({
-  handleNext,
-  acceptType = "both",
-}: UploadCreativeProps) => {
+const UploadCreative = ({ callBack, acceptType }: UploadCreativeProps) => {
   const { toast } = useToast();
   const inputFileRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [files, setFiles] = useState<FileMetadata[]>([]);
+  const params = useParams();
+  const packageName = params.package_name as string;
+  const { mutate: uploadCreative } = useUploadCreative();
 
   const getAcceptString = () => {
     switch (acceptType) {
@@ -120,8 +132,6 @@ const UploadCreative = ({
         return ".png,.jpg,.jpeg,.webp";
       case "video":
         return ".mp4,.webm,.mov";
-      case "both":
-        return ".png,.jpg,.jpeg,.webp,.mp4,.webm,.mov";
       default:
         return ".png,.jpg,.jpeg,.webp,.mp4,.webm,.mov";
     }
@@ -133,8 +143,8 @@ const UploadCreative = ({
     if (files.length) {
       setFieldValue("files", []);
       setFieldValue("creativeName", "");
-      setFieldValue("width", "");
-      setFieldValue("height", "");
+      setFieldValue("width", 0);
+      setFieldValue("height", 0);
       setFiles([]);
     }
   };
@@ -143,151 +153,164 @@ const UploadCreative = ({
     event: React.ChangeEvent<HTMLInputElement>,
     setFieldValue: (field: string, value: any) => void
   ) => {
-    const filesArray = Array.from(event.target.files || []);
-    
-    // Validate file type based on acceptType
-    if (acceptType !== "both") {
-      const invalidFiles = filesArray.filter(file => {
-        if (acceptType === "image") {
-          return !file.type.startsWith("image/");
-        } else if (acceptType === "video") {
-          return !file.type.startsWith("video/");
-        }
-        return false;
-      });
-      
-      if (invalidFiles.length > 0) {
-        toast({
-          title: "Invalid File Type",
-          description: `Please upload only ${acceptType} files`,
-          variant: "destructive",
-        });
-        return;
-      }
-    }
+    const file = event.target.files?.[0];
+    if (!file) return;
 
-    const selectedFiles = await Promise.all(
-      filesArray.map((file) => {
-        return new Promise<FileMetadata>((resolve) => {
-          const reader = new FileReader();
-          reader.readAsDataURL(file);
+    // Set creative type based on acceptType prop
+    setFieldValue("creativeType", acceptType);
 
-          reader.onload = (e) => {
-            const isVideo = file.type.startsWith("video/");
-            const metadata = {
-              file,
-              name: file.name,
-              size: (file.size / (1024 * 1024)).toFixed(2),
-              width: 0,
-              height: 0,
-            };
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
 
-            if (isVideo) {
-              const video = document.createElement("video");
-              video.src = e.target?.result as string;
-              video.onloadedmetadata = () => {
-                metadata.width = video.videoWidth;
-                metadata.height = video.videoHeight;
-                const videoMetadata = {
-                  ...metadata,
-                  duration: video.duration,
-                };
-                resolve(videoMetadata);
-                setFieldValue("creativeType", "video");
-                setFieldValue("creativeDuration", video.duration.toFixed(2));
-                setFieldValue("width", video.videoWidth);
-                setFieldValue("height", video.videoHeight);
-              };
-            } else {
-              const img = new Image();
-              img.src = e.target?.result as string;
-              img.onload = () => {
-                metadata.width = img.width;
-                metadata.height = img.height;
-                resolve(metadata);
-                setFieldValue("creativeType", "image");
-                setFieldValue("width", img.width);
-                setFieldValue("height", img.height);
-              };
-            }
+    reader.onload = (e) => {
+      const metadata = {
+        file,
+        name: file.name,
+        size: (file.size / (1024 * 1024)).toFixed(2),
+        width: 0,
+        height: 0,
+      };
+
+      if (acceptType === "video") {
+        const video = document.createElement("video");
+        video.src = e.target?.result as string;
+        video.onloadedmetadata = () => {
+          metadata.width = video.videoWidth;
+          metadata.height = video.videoHeight;
+          const videoMetadata = {
+            ...metadata,
+            duration: video.duration,
           };
-        });
-      })
-    );
-
-    setFieldValue("files", selectedFiles);
-    setFieldValue("creativeName", selectedFiles[0].name);
-    setFiles(selectedFiles);
+          setFieldValue("files", [videoMetadata]);
+          setFieldValue("creativeName", file.name);
+          setFieldValue("creativeDuration", video.duration.toFixed(2));
+          setFieldValue("width", video.videoWidth);
+          setFieldValue("height", video.videoHeight);
+          setFiles([videoMetadata]);
+        };
+      } else {
+        const img = new Image();
+        img.src = e.target?.result as string;
+        img.onload = () => {
+          metadata.width = img.width;
+          metadata.height = img.height;
+          setFieldValue("files", [metadata]);
+          setFieldValue("creativeName", file.name);
+          setFieldValue("width", img.width);
+          setFieldValue("height", img.height);
+          setFiles([metadata]);
+        };
+      }
+    };
   };
 
-  const handleSubmit = async (values: FormValues) => {
+  const handleImageSubmit = async (values: FormValues) => {
     setIsUploading(true);
-    const package_name = localStorage.getItem("dpackage");
-    const domain_name = localStorage.getItem("displayVideoDomain");
+    const domain_name = "test_domain";
+    const formData = {
+      package_name: packageName,
+      domain_name: domain_name,
+      creative_type: "image",
+      creative_name: values.creativeName,
+      creative_width: values.width,
+      creative_height: values.height,
+    };
 
-    if (!package_name || !domain_name) {
-      toast({
-        title: "Error",
-        description: "Package name or domain name not found",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("package_name", package_name);
-    formData.append("domain_name", domain_name);
-    formData.append("creative_type", "display_creative");
-
-    if (values.files.length) {
-      values.files.forEach((fileMetadata, index) => {
+    try {
+      if (values.files.length) {
+        const fileMetadata = values.files[0];
         const fileExtention = `.${fileMetadata.name.split(".").slice(-1)}`;
         const creativeName = values.creativeName.endsWith(fileExtention)
           ? values.creativeName
           : `${values.creativeName}${fileExtention}`;
-        formData.append(`creative_name${index}`, creativeName);
-        formData.append(`file${index}`, fileMetadata.file);
-        formData.append(
-          `creative_width${index}`,
-          fileMetadata.width.toString()
-        );
-        formData.append(
-          `creative_height${index}`,
-          fileMetadata.height.toString()
-        );
-      });
-    } else {
-      formData.append("creative_name", values.creativeName);
-      formData.append("creative_width", values.width);
-      formData.append("creative_height", values.height);
-      formData.append("creative_url", values.creativeUrl);
-    }
 
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/add_display_creatives`,
-        formData,
-        {
-        headers: {
-            "Content-Type": "multipart/form-data",
+        const presignedUrl = await axios.get(
+          `${WEB_TEST_APIS_BASE_URL}/config_dashboard/generate_presigned_url?package_name=${packageName}&file_name=${creativeName}`
+        );
+
+        // Upload file to presigned URL
+        await axios.put(presignedUrl.data.url, fileMetadata.file, {
+          headers: {
+            "Content-Type": fileMetadata.file.type,
           },
-        }
-      );
+        });
 
-      toast({
-        title: "Success",
-        description: "Creative uploaded successfully!",
-      });
-      handleNext("creative_uploaded");
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully!",
+        });
+      } else {
+        // Handle URL case
+
+        formData["creative_url"] = values.creativeUrl;
+
+        // Log FormData contents
+        console.log("Image FormData contents:", formData);
+      }
     } catch (error) {
       console.error("Error:", error);
       toast({
         title: "Error",
-        description: "Failed to upload creative",
+        description: "Failed to upload image",
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleVideoSubmit = async (values: FormValues) => {
+    setIsUploading(true);
+    const domain_name = "test_domain";
+    const formData: any = {
+      package_name: packageName,
+      domain_name: domain_name,
+      creative_type: "video",
+      creative_name: values.creativeName,
+      creative_width: values.width,
+      creative_height: values.height,
+      creative_duration: values.creativeDuration ? parseInt(values.creativeDuration) : 0,
+    };
+    console.log(formData)
+
+    try {
+      if (values.files.length) {
+        const fileMetadata = values.files[0];
+        const fileExtention = `.${fileMetadata.name.split(".").slice(-1)}`;
+        const creativeName = values.creativeName.endsWith(fileExtention)
+          ? values.creativeName
+          : `${values.creativeName}${fileExtention}`;
+
+        const file_name = await APIS.uploadToS3(
+          "video",
+          packageName,
+          creativeName,
+          fileMetadata.file
+        );
+        formData["uploaded_file_name"] = file_name;
+      } else {
+        formData["creative_url"] = values.creativeUrl;
+      }
+
+      uploadCreative(formData);
+    } catch (error) {
+      console.error("Error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload video",
+        variant: "destructive",
+      });
+    } finally {
+      console.log("Video FormData contents:", formData);
+      setIsUploading(false);
+    }
+  };
+
+  const handleSubmit = async (values: FormValues) => {
+    if (acceptType === "image") {
+      await handleImageSubmit(values);
+    } else {
+      await handleVideoSubmit(values);
     }
   };
 
@@ -304,11 +327,11 @@ const UploadCreative = ({
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Creative Name*
-            </label>
+                </label>
                 <Field
                   as={Input}
-              name="creativeName"
-              placeholder="Enter Creative Name"
+                  name="creativeName"
+                  placeholder="Enter Creative Name"
                   className={`w-full ${
                     errors.creativeName && touched.creativeName
                       ? "border-red-500 focus-visible:ring-red-500"
@@ -321,16 +344,16 @@ const UploadCreative = ({
                     <span>{errors.creativeName}</span>
                   </div>
                 )}
-          </div>
+              </div>
 
-          <div className="space-y-2">
+              <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
                   Creative URL
                 </label>
                 <div className="flex items-center gap-2">
                   <Field
                     as={Input}
-                  name="creativeUrl"
+                    name="creativeUrl"
                     placeholder="Enter Creative URL"
                     className={`flex-1 ${
                       errors.creativeUrl && touched.creativeUrl
@@ -340,16 +363,16 @@ const UploadCreative = ({
                   />
                   <span className="text-gray-500">or</span>
                   <Button
-                type="button"
+                    type="button"
                     variant="outline"
                     onClick={() => inputFileRef.current?.click()}
                     className="flex items-center gap-2"
-              >
+                  >
                     <Upload className="h-4 w-4" />
-                Browse File
+                    Browse File
                   </Button>
-              <input
-                type="file"
+                  <input
+                    type="file"
                     ref={inputFileRef}
                     hidden
                     accept={getAcceptString()}
@@ -366,23 +389,27 @@ const UploadCreative = ({
                   </div>
                 )}
               </div>
-          </div>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                Height
-              </label>
+                  Height
+                </label>
                 <Field
                   as={Input}
-                type="number"
-                name="height"
+                  type="number"
+                  name="height"
                   placeholder="Enter Height"
                   className={`w-full ${
                     errors.height && touched.height
                       ? "border-red-500 focus-visible:ring-red-500"
                       : ""
                   }`}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const value = parseInt(e.target.value, 10);
+                    setFieldValue("height", isNaN(value) ? 0 : value);
+                  }}
                 />
                 {errors.height && touched.height && (
                   <div className="flex items-center gap-1 text-red-500 text-sm mt-1">
@@ -390,22 +417,26 @@ const UploadCreative = ({
                     <span>{errors.height}</span>
                   </div>
                 )}
-            </div>
+              </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">
-                Width
-              </label>
+                  Width
+                </label>
                 <Field
                   as={Input}
-                type="number"
-                name="width"
+                  type="number"
+                  name="width"
                   placeholder="Enter Width"
                   className={`w-full ${
                     errors.width && touched.width
                       ? "border-red-500 focus-visible:ring-red-500"
                       : ""
                   }`}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    const value = parseInt(e.target.value, 10);
+                    setFieldValue("width", isNaN(value) ? 0 : value);
+                  }}
                 />
                 {errors.width && touched.width && (
                   <div className="flex items-center gap-1 text-red-500 text-sm mt-1">
@@ -413,23 +444,30 @@ const UploadCreative = ({
                     <span>{errors.width}</span>
                   </div>
                 )}
-            </div>
+              </div>
 
               {acceptType === "video" && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
                     Creative Duration (seconds)
-              </label>
+                  </label>
                   <Field
                     as={Input}
-                type="number"
-                name="creativeDuration"
+                    type="number"
+                    name="creativeDuration"
                     placeholder="Enter Duration"
                     className={`w-full ${
                       errors.creativeDuration && touched.creativeDuration
                         ? "border-red-500 focus-visible:ring-red-500"
                         : ""
                     }`}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const value = parseInt(e.target.value, 10);
+                      setFieldValue(
+                        "creativeDuration",
+                        isNaN(value) ? 0 : value
+                      );
+                    }}
                   />
                   {errors.creativeDuration && touched.creativeDuration && (
                     <div className="flex items-center gap-1 text-red-500 text-sm mt-1">
@@ -439,12 +477,14 @@ const UploadCreative = ({
                   )}
                 </div>
               )}
-          </div>
+            </div>
 
             {files.length > 0 && (
               <div className="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-sm font-medium text-gray-700">Selected Files:</h3>
+                  <h3 className="text-sm font-medium text-gray-700">
+                    Selected Files:
+                  </h3>
                   <Button
                     type="button"
                     variant="ghost"
@@ -458,11 +498,14 @@ const UploadCreative = ({
                 </div>
                 <div className="space-y-2">
                   {files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between text-sm text-gray-600 bg-white p-2 rounded border border-gray-200">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between text-sm text-gray-600 bg-white p-2 rounded border border-gray-200"
+                    >
                       <span>{file.name}</span>
                       <span className="text-gray-500">
                         {file.width}x{file.height} ({file.size}MB)
-              </span>
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -484,10 +527,10 @@ const UploadCreative = ({
                   <div className="flex items-center gap-2">
                     <Upload className="h-4 w-4" />
                     <span>Upload Creative</span>
-      </div>
+                  </div>
                 )}
               </Button>
-    </div>
+            </div>
           </Form>
         )}
       </Formik>

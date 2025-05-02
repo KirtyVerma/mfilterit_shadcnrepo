@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Formik, Form, Field } from "formik";
 import * as Yup from "yup";
-import { useGetPlatforms, useCreateDisplayTracker } from "../api";
+import { useGetPlatforms } from "../api";
 import { Loader2, AlertCircle, CheckCircle2, Copy } from "lucide-react";
 import { useParams } from "next/navigation";
 
@@ -46,9 +46,9 @@ const trackerConfigs: TrackerConfig[] = [
       platform: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
         .required("Platform is required"),
-      tag_identifier: Yup.string()
+      tracker_name: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
-        .required("Tag Identifier is required"),
+        .required("Tracker Name is required"),
       campaign_name: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
         .required("Campaign name is required"),
@@ -62,7 +62,7 @@ const trackerConfigs: TrackerConfig[] = [
     }),
     initialValues: {
       platform: "",
-      tag_identifier: "",
+      tracker_name: "",
       campaign_name: "",
       ro_number: "",
       extra_param_1: "",
@@ -71,7 +71,7 @@ const trackerConfigs: TrackerConfig[] = [
     },
     fields: [
       { name: "platform", label: "Select Platform*", required: true },
-      { name: "tag_identifier", label: "Tag Identifier*", required: true },
+      { name: "tracker_name", label: "Tracker Name*", required: true },
       { name: "campaign_name", label: "Campaign Name*", required: true },
       { name: "extra_param_1", label: "Extra Param 1" },
       { name: "extra_param_2", label: "Extra Param 2" },
@@ -87,9 +87,9 @@ const trackerConfigs: TrackerConfig[] = [
       platform: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
         .required("Platform is required"),
-      tag_identifier: Yup.string()
+      tracker_name: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
-        .required("Tag Identifier is required"),
+        .required("Tracker Name is required"),
       campaign_name: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
         .required("Campaign name is required"),
@@ -103,7 +103,7 @@ const trackerConfigs: TrackerConfig[] = [
     }),
     initialValues: {
       platform: "",
-      tag_identifier: "",
+      tracker_name: "",
       campaign_name: "",
       ro_number: "",
       extra_param_1: "",
@@ -112,7 +112,7 @@ const trackerConfigs: TrackerConfig[] = [
     },
     fields: [
       { name: "platform", label: "Select Platform*", required: true },
-      { name: "tag_identifier", label: "Tag Identifier*", required: true },
+      { name: "tracker_name", label: "Tracker Name*", required: true },
       { name: "campaign_name", label: "Campaign Name*", required: true },
       { name: "extra_param_1", label: "Extra Param 1" },
       { name: "extra_param_2", label: "Extra Param 2" },
@@ -134,9 +134,9 @@ const trackerConfigs: TrackerConfig[] = [
       platform: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
         .required("Platform is required"),
-      tag_identifier: Yup.string()
+      tracker_name: Yup.string()
         .matches(/^[a-zA-Z0-9_-]+$/, "Invalid characters in the string")
-        .required("Tag Identifier is required"),
+        .required("Tracker Name is required"),
       ins_tag_text: Yup.string().required("INS Tag is required"),
       extra_param_1: Yup.string(),
       extra_param_2: Yup.string(),
@@ -152,20 +152,20 @@ const trackerConfigs: TrackerConfig[] = [
       placement_id: "",
       advertiser_id: "",
       platform: "",
-      tag_identifier: "",
+      tracker_name: "",
       ro_number: "",
       ins_tag_text: "",
       extra_param_1: "",
       extra_param_2: "",
-      extra_param_3: "",  
+      extra_param_3: "",
     },
     fields: [
+      { name: "platform", label: "Select Platform*", required: true },
       { name: "campaign_name", label: "Campaign Name*", required: true },
       { name: "campaign_id", label: "Campaign ID*", required: true },
       { name: "placement_id", label: "Placement ID*", required: true },
       { name: "advertiser_id", label: "Advertiser ID*", required: true },
-      { name: "platform", label: "Select Platform*", required: true },
-      { name: "tag_identifier", label: "Tag Identifier*", required: true },
+      { name: "tracker_name", label: "Tracker Name*", required: true },
       {
         name: "ins_tag_text",
         label: "INS Tag*",
@@ -183,14 +183,12 @@ const trackerConfigs: TrackerConfig[] = [
 const AddMfDisplayTracker: React.FC<{ default_page: string }> = ({
   default_page,
 }) => {
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(default_page);
-
   const handleTabChange = (tab: string) => {
     setActiveTab(tab);
   };
 
-	return (
+  return (
     <div id="DisplayDashboardComponent" className="max-w-7xl mx-auto">
       <div className="border-b border-gray-200 mb-8">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
@@ -243,7 +241,7 @@ const AddMfDisplayTracker: React.FC<{ default_page: string }> = ({
           </div>
         ))}
       </div>
-			</div>
+    </div>
   );
 };
 
@@ -254,13 +252,8 @@ const TrackerForm: React.FC<{ config: TrackerConfig }> = ({ config }) => {
   const package_name = params.package_name as string;
 
   const { data: platformsData = [], isLoading: isLoadingPlatforms } =
-    useGetPlatforms(package_name, config.type);
-  const createDisplayTracker = useCreateDisplayTracker();
-
-  const platforms: Platform[] = platformsData.map((data: any) => ({
-    value: data.platform_name,
-    label: data.platform_name,
-  }));
+    useGetPlatforms(config.type);
+  // const createDisplayTracker = useCreateDisplayTracker();
 
   const handleSubmit = async (
     values: typeof config.initialValues,
@@ -272,9 +265,9 @@ const TrackerForm: React.FC<{ config: TrackerConfig }> = ({ config }) => {
         tracker_type: config.type,
         package_name,
       };
-	  console.log(payload)
-    //   const response = await createDisplayTracker.mutateAsync(payload);
-    //   setTrackerValue(response.tracker_url);
+      console.log(payload);
+      //   const response = await createDisplayTracker.mutateAsync(payload);
+      //   setTrackerValue(response.tracker_url);
     } catch (error) {
       console.error("Error creating tracker:", error);
     } finally {
@@ -325,12 +318,9 @@ const TrackerForm: React.FC<{ config: TrackerConfig }> = ({ config }) => {
                         )}
                       </SelectTrigger>
                       <SelectContent position="popper">
-                        {platforms.map((platform) => (
-                          <SelectItem
-                            key={platform.value}
-                            value={platform.value}
-                          >
-                            {platform.label}
+                        {platformsData.map((platform: any) => (
+                          <SelectItem key={platform} value={platform}>
+                            {platform}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -367,10 +357,10 @@ const TrackerForm: React.FC<{ config: TrackerConfig }> = ({ config }) => {
             <div className="flex justify-start pt-4">
               <Button
                 type="submit"
-                disabled={isSubmitting || createDisplayTracker.isLoading}
+                disabled={isSubmitting}
                 className="px-8 py-2 text-base font-medium"
               >
-                {isSubmitting || createDisplayTracker.isLoading ? (
+                {isSubmitting ? (
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     <span>Generating...</span>

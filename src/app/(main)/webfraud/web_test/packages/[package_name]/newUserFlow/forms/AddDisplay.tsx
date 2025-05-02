@@ -91,48 +91,6 @@ const uploadSchema = baseSchema.shape({
   display_creative_url: Yup.string(),
 });
 
-const TrackerCopyModal: React.FC<TrackerCopyModalProps> = ({ show, tracker, onHide, resetForm }) => {
-  const router = useRouter();
-  const [copyBtnText, setCopyBtnText] = useState("Copy Tracker");
-
-  const closeModal = () => {
-    router.push('/dvtrackers/display');
-    onHide();
-  };
-
-  return (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center ${show ? 'block' : 'hidden'}`}>
-      <div className="bg-white p-6 rounded-lg max-w-2xl w-full">
-        <h2 className="text-xl font-semibold mb-4">Tracker created successfully! Please copy the tracker.</h2>
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Display Tracker</label>
-          <textarea
-            className="w-full p-2 border rounded-md"
-            rows={3}
-            value={tracker}
-            disabled
-          />
-        </div>
-        <div className="flex justify-end gap-4">
-          <Button variant="outline" onClick={closeModal}>Close</Button>
-          <Button onClick={() => {
-            navigator.clipboard.writeText(tracker);
-            setCopyBtnText("Copied successfully!");
-            setTimeout(() => setCopyBtnText("Copy Tracker"), 1000);
-          }}>
-            {copyBtnText}
-          </Button>
-          <Button onClick={() => {
-            resetForm();
-            onHide();
-          }}>
-            Create Tracker again
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const AddDisplayTracker: React.FC<AddDisplayTrackerProps> = ({ trackerType = "display_creative", inputType = "url" }) => {
   const { toast } = useToast();

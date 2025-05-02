@@ -4,12 +4,12 @@ import { toast } from "@/hooks/use-toast";
 import { Toast } from "../../../components/ToastHelper";
 
 // const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "";
-const BASE_URL =
+export const WEB_TEST_APIS_BASE_URL =
   "https://oikgmuvt5b.execute-api.us-west-2.amazonaws.com/test/api/v1";
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: WEB_TEST_APIS_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -38,63 +38,6 @@ type macro_type =
   | "display_tracker"
   | "video_1x1";
 
-interface DisplayTrackerPayload {
-  tracker_type: macro_type;
-  package_name: string;
-  platform: string;
-  tag_identifier: string;
-  campaign_name: string;
-  ro_number?: string;
-  extra_param_1?: string;
-  extra_param_2?: string;
-  campaign_id?: string;
-  placement_id?: string;
-  advertiser_id?: string;
-  ins_tag_text?: string;
-}
-
-interface OneXOneTrackerPayload {
-  platform_name: string;
-  ro_number?: string;
-  campaign_name: string;
-  tag_identifier: string;
-  package_name: string;
-  domain_name: string;
-  trId: string;
-  tracker_type: "video_1x1";
-  email: string;
-}
-
-interface YoutubeTrackerPayload {
-  platform_name: string;
-  campaign_name: string;
-  tag_identifier: string;
-  ro_number?: string;
-  tracker_type: "video_youtube";
-  email: string;
-  domain_name: string;
-  package_name: string;
-}
-const successMessages: Record<macro_type, string> = {
-  display_standard: "Standard Display Tracker created successfully",
-  display_native: "Native Display Tracker created successfully",
-  display_ins: "INS Wrapping Tracker created successfully",
-  video_1x1: "1x1 Tracker created successfully",
-  video_youtube: "YouTube Tracker created successfully",
-  video_vast: "Vast Tracker created successfully",
-  display_tracker: "Display Tracker created successfully",
-};
-
-const errorMessages: Record<macro_type, string> = {
-  display_standard: "Failed to create Standard Display Tracker",
-  display_native: "Failed to create Native Display Tracker",
-  display_ins: "Failed to create INS Wrapping Tracker",
-  video_1x1: "Failed to create 1x1 Tracker",
-  video_youtube: "Failed to create YouTube Tracker",
-  video_vast: "Failed to create Vast Tracker",
-  display_tracker: "Failed to create Display Tracker",
-};
-
 const APIS = {
   async getPlatforms(macro_type: macro_type): Promise<any> {
     const data: any = await api.get(
@@ -109,7 +52,6 @@ const APIS = {
     const data: any = await api.get(
       `config_dashboard/list_tp_tracker_types?package_name=${package_name}&tracker_type=${tracker_type}`
     );
-    console.log("===============================", data.data);
     return data.data;
   },
   async list_creatives(
@@ -119,43 +61,51 @@ const APIS = {
     const data: any = await api.get(
       `config_dashboard/list_creatives?package_name=${package_name}`
     );
-    console.log("===============================", data.data);
     return data.data;
   },
-  async createDisplayTracker(payload: DisplayTrackerPayload): Promise<any> {
-    const endpoints: Partial<Record<macro_type, string>> = {
-      display_standard: "/api/add_display_standard",
-      display_native: "/api/add_display_native",
-      display_ins: "/api/add_display_ins",
-      video_1x1: "/api/add_1x1_tracker",
-      video_youtube: "/api/add_youtube_tracker",
-      video_vast: "/api/add_vast_tracker",
-      display_tracker: "/api/add_display_tracker",
-    };
+  async uploadToS3(
+    upload_type: "url" | "video" = "video",
+    package_name: string,
+    file_name: string,
+    file: File
+  ): Promise<any> {
+    try {
+      if (upload_type === "video") {
+        const data: any = await api.get(
+          `config_dashboard/generate_presigned_url?package_name=${package_name}&file_name=${file_name}`
+        );
+        const presigned_url =
+          "https://s3.ap-south-1.amazonaws.com/wafs-creative-hosting/assets/web.test_package.cpv/MTc0NjE4MDM5MjM4Mg.mp4?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIASB2TGVD5I3LFVC64%2F20250502%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20250502T100632Z&X-Amz-Expires=300&X-Amz-SignedHeaders=host&X-Amz-Signature=7eb5d2566a14bb41144640a3cecfd046f73577286dcbfb18c6234d4b93c60dc9";
+        const res_file_name =
+          "assets/web.test_package.cpv/MTc0NjE4MDM5MjM4Mg.mp4";
+        await fetch(presigned_url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type,
+          },
+          body: file,
+        });
 
-    const endpoint = endpoints[payload.tracker_type];
-
-    if (!endpoint) {
-      throw new Error("Invalid tracker type");
+        return res_file_name;
+      }
+    } catch (error) {
+      console.log(error);
+      throw new Error("Something went wrong while uploading the video");
     }
-
-    const data: any = await api.post(endpoint, payload);
+  },
+  async uploadCreative(payload: any): Promise<any> {
+    const data: any = await api.post(
+      "config_dashboard/upload_creative",
+      payload
+    );
     return data.data;
   },
-  async createVastTracker(payload: any): Promise<any> {
+  async createTracker(payload: any): Promise<any> {
     const data: any = await api.post(
       "config_dashboard/create_tracker",
       payload
     );
 
-    return data.data;
-  },
-  async create1x1Tracker(payload: OneXOneTrackerPayload): Promise<any> {
-    const data: any = await api.post("/api/add_1x1_tracker", payload);
-    return data.data;
-  },
-  async createYoutubeTracker(payload: YoutubeTrackerPayload): Promise<any> {
-    const data: any = await api.post("/api/add_youtube_tracker", payload);
     return data.data;
   },
 };
@@ -173,47 +123,9 @@ function useListTpTrackerTypes(package_name: string, macro_type: macro_type) {
   });
 }
 
-function useCreateDisplayTracker() {
-  return useMutation({
-    mutationFn: APIS.createDisplayTracker,
-    onSuccess: () => {
-      const successMessage = successMessages["video_vast"];
-      Toast.success({ description: successMessage });
-    },
-    onError: () => {
-      const errorMessage = errorMessages["video_vast"];
-      Toast.error({ description: errorMessage });
-    },
-  });
-}
-
-function useCreate1x1Tracker() {
-  return useMutation({
-    mutationFn: APIS.create1x1Tracker,
-    onSuccess: () => {
-      Toast.success({ description: "1x1 Tracker created successfully" });
-    },
-    onError: () => {
-      Toast.error({ description: "Failed to create 1x1 Tracker" });
-    },
-  });
-}
-
-function useCreateYoutubeTracker() {
-  return useMutation({
-    mutationFn: APIS.createYoutubeTracker,
-    onSuccess: () => {
-      Toast.success({ description: "YouTube Tracker created successfully" });
-    },
-    onError: () => {
-      Toast.error({ description: "Failed to create YouTube Tracker" });
-    },
-  });
-}
-
 function useCreateVastTracker() {
   return useMutation({
-    mutationFn: APIS.createVastTracker,
+    mutationFn: (payload: any) => APIS.createTracker(payload),
     onSuccess: () => {
       Toast.success({ description: "Vast Tracker created successfully" });
     },
@@ -229,12 +141,24 @@ function useListCreatives(package_name: string) {
     queryFn: () => APIS.list_creatives(package_name),
   });
 }
+
+function useUploadCreative() {
+  return useMutation({
+    mutationFn: (payload: any) => APIS.uploadCreative(payload),
+    onSuccess: () => {
+      Toast.success({ description: "Creative uploaded successfully" });
+    },
+    onError: () => {
+      Toast.error({ description: "Failed to upload Creative" });
+    },
+  });
+}
+
 export {
   useGetPlatforms,
-  useCreateDisplayTracker,
-  useCreate1x1Tracker,
-  useCreateYoutubeTracker,
   useListTpTrackerTypes,
   useCreateVastTracker,
   useListCreatives,
+  useUploadCreative,
+  APIS,
 };
