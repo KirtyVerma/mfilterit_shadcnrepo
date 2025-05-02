@@ -71,9 +71,8 @@ const WEB_TEST_APIS = {
   async getTrackers({ queryKey }: any): Promise<any> {
     const [_key, packageName] = queryKey;
     const data: any = await api.get(
-      `config_dashboard/list_trackers?package_name=${packageName}&limit=200&page=1`
+      `config_dashboard/list_trackers?package_name=${packageName}&limit=100&page=1`
     );
-    console.log("data.data.trackers", data.data.trackers);
     return data.data.trackers;
   },
   async getNewTrackerSchema(tracker_type: string): Promise<any> {

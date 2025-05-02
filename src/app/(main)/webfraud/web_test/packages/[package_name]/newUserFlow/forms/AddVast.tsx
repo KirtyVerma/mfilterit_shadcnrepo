@@ -23,7 +23,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import UploadCreative from "./UploadCreative";
-import { useGetPlatforms, useListTpTrackerTypes } from "../api";
+import {
+  useGetPlatforms,
+  useListCreatives,
+  useListTpTrackerTypes,
+} from "../api";
 
 interface VideoMetadata {
   width: number;
@@ -180,7 +184,6 @@ const getVideoMetadata = async (
 };
 
 const AddVastTracker: React.FC<AddVastTrackerProps> = ({
-  trackerType = "vast_creative",
   inputType = "url",
 }) => {
   const params = useParams();
@@ -191,20 +194,14 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
   const [generatedVastTracker, setGeneratedVastTracker] = useState<
     string | null
   >(null);
+  
   const { data: platformsData, isLoading: isLoadingPlatforms } =
     useGetPlatforms("video_vast");
   const { data: trackerTypesData, isLoading: isLoadingTrackerTypes } =
     useListTpTrackerTypes(packageName, "video_vast");
-  const [customTrackers, setCustomTrackers] = useState<CustomTracker[]>([
-    { type: "impression", url: "" },
-    { type: "click", url: "" },
-    { type: "complete", url: "" },
-    { type: "first_quartile", url: "" },
-    { type: "midpoint", url: "" },
-    { type: "click_through_tracker", url: "" },
-  ]);
+  const { data: creativesData, isLoading: isLoadingCreatives } =
+    useListCreatives(packageName);
   const ref = useRef(null);
-  console.log("trackerTypesData", trackerTypesData);
 
   const initialFormValues: FormValues = {
     domain_name: "",
@@ -267,7 +264,6 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
             creative_duration: metadata.duration,
           };
         } catch (error) {
-          
           toast({
             title: "Error",
             description: "Invalid VAST creative URL",
@@ -424,7 +420,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                       }
                       disabled={isLoadingPlatforms}
                     >
-                      <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
+                      <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none">
                         <SelectValue
                           placeholder={
                             isLoadingPlatforms
@@ -462,24 +458,52 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                       <Label className="block mb-2.5 text-[#374151] text-sm font-medium">
                         Creatives*
                       </Label>
-                      <Select
-                        value={values.creative_id}
-                        onValueChange={(value: string) =>
-                          setFieldValue("creative_id", value)
-                        }
-                      >
-                        <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
-                          <SelectValue
-                            placeholder="Select Creative"
-                            className="text-[#9CA3AF]"
-                          />
-                        </SelectTrigger>
-                        <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
-                          <SelectItem value="creative1">Creative 1</SelectItem>
-                          <SelectItem value="creative2">Creative 2</SelectItem>
-                          <SelectItem value="creative3">Creative 3</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex">
+                        <div className="flex-1">
+                          <Select
+                            value={values.creative_id}
+                            onValueChange={(value: string) =>
+                              setFieldValue("creative_id", value)
+                            }
+                            disabled={isLoadingCreatives}
+                          >
+                            <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-r-none text-left flex justify-between items-center text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none">
+                              <SelectValue
+                                placeholder={
+                                  isLoadingCreatives
+                                    ? "Loading creatives..."
+                                    : "Select Creative"
+                                }
+                                className="text-[#9CA3AF]"
+                              />
+                            </SelectTrigger>
+                            <SelectContent className="bg-white border border-[#E5E7EB] rounded-md shadow-lg">
+                              {isLoadingCreatives ? (
+                                <div className="flex items-center justify-center p-4">
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  <span className="ml-2">Loading creatives...</span>
+                                </div>
+                              ) : (
+                                creativesData?.map((creative: any) => (
+                                  <SelectItem
+                                    key={creative.creative_id}
+                                    value={creative.creative_id}
+                                  >
+                                    {creative.creative_name || creative.creative_id}
+                                  </SelectItem>
+                                ))
+                              )}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={() => setShowUploadModal(true)}
+                          className="bg-[#9C27B0] hover:bg-[#7B1FA2] text-white h-11 px-4 flex items-center gap-2 rounded-l-none border-l-0"
+                        >
+                          <Upload className="w-4 h-4" />
+                        </Button>
+                      </div>
                       {errors.creative_id && touched.creative_id && (
                         <div className="text-red-500 text-xs mt-1 flex items-center gap-1">
                           <AlertCircle className="w-3 h-3" />
@@ -636,9 +660,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                           }
                           disabled={!values.capping_threshold}
                         >
-                          <SelectTrigger
-                            className={`w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm transition-colors ${!values.capping_threshold ? "opacity-50 cursor-not-allowed bg-gray-50" : ""}`}
-                          >
+                          <SelectTrigger className={`w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none ${!values.capping_threshold ? "opacity-50 cursor-not-allowed bg-gray-50" : ""}`}>
                             <SelectValue
                               placeholder="Select Capping Timeframe"
                               className="text-[#9CA3AF]"
@@ -782,7 +804,7 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                               }}
                               disabled={isLoadingTrackerTypes}
                             >
-                              <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm">
+                              <SelectTrigger className="w-full h-11 px-3 bg-white border border-[#E5E7EB] rounded-md text-left flex justify-between items-center text-sm focus:ring-0 focus:ring-offset-0 focus:outline-none">
                                 <SelectValue
                                   placeholder={
                                     isLoadingTrackerTypes
@@ -804,9 +826,13 @@ const AddVastTracker: React.FC<AddVastTrackerProps> = ({
                                   trackerTypesData
                                     ?.filter(
                                       (trackerType: string) =>
-                                        trackerType !== "click_through_tracker" ||
-                                        !values.tp_tracker_type.includes("click_through_tracker") ||
-                                        trackerType === values.tp_tracker_type[index]
+                                        trackerType !==
+                                          "click_through_tracker" ||
+                                        !values.tp_tracker_type.includes(
+                                          "click_through_tracker"
+                                        ) ||
+                                        trackerType ===
+                                          values.tp_tracker_type[index]
                                     )
                                     .map((trackerType: string) => (
                                       <SelectItem

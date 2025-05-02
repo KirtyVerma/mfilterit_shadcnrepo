@@ -112,6 +112,16 @@ const APIS = {
     console.log("===============================", data.data);
     return data.data;
   },
+  async list_creatives(
+    package_name: string
+    // type: "video" | "display"
+  ): Promise<any> {
+    const data: any = await api.get(
+      `config_dashboard/list_creatives?package_name=${package_name}`
+    );
+    console.log("===============================", data.data);
+    return data.data;
+  },
   async createDisplayTracker(payload: DisplayTrackerPayload): Promise<any> {
     const endpoints: Partial<Record<macro_type, string>> = {
       display_standard: "/api/add_display_standard",
@@ -213,6 +223,12 @@ function useCreateVastTracker() {
   });
 }
 
+function useListCreatives(package_name: string) {
+  return useQuery({
+    queryKey: ["list_creatives", package_name],
+    queryFn: () => APIS.list_creatives(package_name),
+  });
+}
 export {
   useGetPlatforms,
   useCreateDisplayTracker,
@@ -220,4 +236,5 @@ export {
   useCreateYoutubeTracker,
   useListTpTrackerTypes,
   useCreateVastTracker,
+  useListCreatives,
 };

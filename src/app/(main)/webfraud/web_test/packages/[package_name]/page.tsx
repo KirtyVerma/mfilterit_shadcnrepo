@@ -18,6 +18,7 @@ import {
 export default function ListTrackers() {
   const packageName: any = useParams()?.package_name;
   const { data, isLoading, refetch } = useGetTrackers(packageName);
+  console.log("=====>>>>>>data", data);
   const extrafields = [
     {
       title: "Actions",
